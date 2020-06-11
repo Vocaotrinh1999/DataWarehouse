@@ -1,6 +1,7 @@
 package LoadData;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,15 +19,24 @@ public class ConnectDataConfig {
 		db = new DBConnection();
 	}
 
-	public Connection connectConfigDatabase() {
+	public String readFileFromFolder(String file) {
 		String result = "";
-		Connection connection = null;
 		try {
-			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream("config/dataconfig.txt"), "UTF-8"));
+			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(new File(file)), "UTF-8"));
 			String line = null;
 			while ((line = bf.readLine()) != null) {
 				result += line + "\n";
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	public Connection connectConfigDatabase() {
+		String result;
+		Connection connection = null;
+		try {
+			result = readFileFromFolder("config/dataconfig.txt");
 			String[] connectInfo = result.split("\n");
 			String driver = connectInfo[0];
 			String url = connectInfo[1];
@@ -38,7 +48,7 @@ public class ConnectDataConfig {
 			} else {
 				System.out.println("connect fail");
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return connection;
