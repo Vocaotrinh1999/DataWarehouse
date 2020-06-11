@@ -29,7 +29,7 @@ public class InsertData {
 		}
 		return result;
 	}
-	//lấy nội dung các text lấy được đem vào lưu trong database
+	//lấy nội dung các text lấy được đem vào lưu trong database stagging và ghi log
 	public void addText() { // add text from source to database stagging
 		String result = readFromDataFolder();
 		String sql = "insert into datawarehouse_staging.staging(text) value(?)";
@@ -42,7 +42,7 @@ public class InsertData {
 			pre2 = connection2.prepareStatement(sql2);
 			for (int i = 1; i < data.length; i++) { //loai bo header data[0]
 				pre.setString(1, data[i]);
-				pre.executeUpdate();
+				pre.executeUpdate();//cho nay bi nham mai sua sau
 			}
 			File file = new File("data"); // ghi log
 			File[] listFile = file.listFiles();
