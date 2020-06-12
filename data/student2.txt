@@ -1,3 +1,4 @@
+Emp ID,First Name,Last Name,E Mail,Date of Birth,Salary,Phone No. ,City
 8902902,Julia,Scott,julia.scott@apple.com,7/15/1959,141518,423-939-1010,Primm Springs
 6224063,Thomas,Lewis,thomas.lewis@gmail.com,10/4/1967,73862,314-679-3697,Dutchtown
 9796071,Carol,Edwards,carol.edwards@msn.com,12/14/1994,93967,225-283-4295,Shreveport

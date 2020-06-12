@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 
 public class InsertToLog {
 
+	/*
 	ConnectDataConfig connectToConfig;
 	PreparedStatement pre;
 
@@ -28,4 +29,5 @@ public class InsertToLog {
 			e.printStackTrace();
 		}
 	}
+	*/
 }

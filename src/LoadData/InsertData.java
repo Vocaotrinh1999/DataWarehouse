@@ -12,16 +12,18 @@ import java.util.ArrayList;
 public class InsertData {
 	ReadData read = null;
 	ConnectDataConfig connectDataConfig;
-	PreparedStatement pre , pre2 ;
+	PreparedStatement pre, pre2;
 	Connection connection, connection2;
 	ResultSet result;
+
 	public InsertData() {
-		//connection = new DAO().openConnection();
+		// connection = new DAO().openConnection();
 		read = new ReadData();
 		connectDataConfig = new ConnectDataConfig();
 	}
+
 	public String readFromDataFolder() {
-		String result ="";
+		String result = "";
 		File file = new File("data");
 		File[] listFile = file.listFiles();
 		for (File file2 : listFile) {
@@ -29,7 +31,8 @@ public class InsertData {
 		}
 		return result;
 	}
-	//lấy nội dung các text lấy được đem vào lưu trong database stagging và ghi log
+
+	// lấy nội dung các text lấy được đem vào lưu trong database stagging và ghi log
 	public void addText() { // add text from source to database stagging
 		String result = readFromDataFolder();
 		String sql = "insert into datawarehouse_staging.staging(text) value(?)";
@@ -40,9 +43,11 @@ public class InsertData {
 		try {
 			pre = connection.prepareStatement(sql);
 			pre2 = connection2.prepareStatement(sql2);
-			for (int i = 1; i < data.length; i++) { //loai bo header data[0]
-				pre.setString(1, data[i]);
-				pre.executeUpdate();//cho nay bi nham mai sua sau
+			for (String d : data) {
+				if (!d.startsWith("Emp")) { // loai bo header
+					pre.setString(1, d);
+					pre.executeUpdate();
+				}
 			}
 			File file = new File("data"); // ghi log
 			File[] listFile = file.listFiles();
@@ -50,15 +55,16 @@ public class InsertData {
 				pre2.setString(1, file2.getPath());
 				pre2.executeUpdate();
 			}
-
+			System.out.println("sucess");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	//lấy nội dung các đoạn text đã lưu trong csdl để chuyển đổi thành object
-	public ArrayList<String> loadTextFromDatabase() {
+
+	// lấy nội dung các đoạn text đã lưu trong csdl để chuyển đổi thành object
+	public ArrayList<String> loadTextFromStaging() {
 		ArrayList<String> listST = new ArrayList<String>();
+		connection = connectDataConfig.connectDataStaging();
 		String sql = "SELECT datatext FROM datawarehouse.datatext";
 		try {
 			pre = connection.prepareStatement(sql);
@@ -71,10 +77,10 @@ public class InsertData {
 		}
 		return listST;
 	}
-	
-	//lưu các đối tượng đã xử lý vào database
+
+	// lưu các đối tượng đã xử lý vào database
 	public int addObject() {
-		ArrayList<String> listEmp = loadTextFromDatabase();
+		ArrayList<String> listEmp = loadTextFromStaging();
 		String sql = "insert into datawarehouse.dataobject value(?,?,?,?,?,?,?,?)";
 		int kq = 0;
 		try {
@@ -87,7 +93,7 @@ public class InsertData {
 				String email = arr[3];
 				String[] date = arr[4].split("/");
 				LocalDate dateOfBirth = LocalDate.of(Integer.parseInt(date[2]), Integer.parseInt(date[0]),
-										Integer.parseInt(date[1]));
+						Integer.parseInt(date[1]));
 				double salary = Double.parseDouble(arr[5]);
 				String phoneNumber = arr[6];
 				String city = arr[7];
@@ -110,15 +116,6 @@ public class InsertData {
 
 	public static void main(String[] args) {
 		InsertData insert = new InsertData();
-		 
-		/*ArrayList<String> listST = insert.loadTextFromDatabase();
-		for (String st : listST) {
-			System.out.println(st);
-		}
-		System.out.println("\n------------------\n");
-		System.out.println(insert.addObject());
-		*/
 		insert.addText();
-		System.out.println(insert.readFromDataFolder());
 	}
 }

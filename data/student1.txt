@@ -1,3 +1,4 @@
+Emp ID,First Name,Last Name,E Mail,Date of Birth,Salary,Phone No. ,City
 6775091,Lois,Walker,lois.walker@hotmail.com,3/29/1981,168251,303-572-8492,Denver
 9407611,Brenda,Robinson,brenda.robinson@gmail.com,7/31/1970,51063,225-945-4954,Stonewall
 4289451,Joe,Robinson,joe.robinson@gmail.com,6/16/1963,50155,219-904-2161,Michigantown

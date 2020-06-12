@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class ReadData {
 
-	public ArrayList<String> readData () {
+	/*public ArrayList<String> readData () {
 		ArrayList<String> listST = new ArrayList<String>();
 		try {
 			BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream("data//person.csv"), "UTF-8"));
@@ -22,7 +22,7 @@ public class ReadData {
 			}
 			String[] arrObject = result.split("\n");
 			//loai bo header
-			for (int i = 1; i < arrObject.length; i++) {
+			for (int i = 0; i < arrObject.length; i++) {
 				listST.add(arrObject[i]);
 			}
 		} catch (IOException e) {
@@ -38,4 +38,5 @@ public class ReadData {
 			System.out.println(string);
 		}
 	}
+	*/
 }

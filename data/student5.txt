@@ -1,3 +1,4 @@
+Emp ID,First Name,Last Name,E Mail,Date of Birth,Salary,Phone No. ,City
 4780031,Cynthia,White,cynthia.white@gmail.com,6/15/1963,186200,314-593-3092,Kansas City
 9512252,Margaret,Brooks,margaret.brooks@gmail.com,6/27/1992,43867,303-960-0117,Haswell
 8839361,Douglas,Flores,douglas.flores@gmail.com,4/21/1986,181793,303-836-4721,Eckert
