@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class InsertData {
-	ReadData read = null;
 	ConnectDataConfig connectDataConfig;
 	PreparedStatement pre, pre2;
 	Connection connection, connection2;
@@ -18,7 +17,6 @@ public class InsertData {
 
 	public InsertData() {
 		// connection = new DAO().openConnection();
-		read = new ReadData();
 		connectDataConfig = new ConnectDataConfig();
 	}
 
