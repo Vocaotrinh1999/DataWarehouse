@@ -65,7 +65,7 @@ public class InsertData {
 	public ArrayList<String> loadTextFromStaging() {
 		ArrayList<String> listST = new ArrayList<String>();
 		connection = connectDataConfig.connectDataStaging();
-		String sql = "SELECT datatext FROM datawarehouse.datatext";
+		String sql = "SELECT text FROM datawarehouse_staging.staging";
 		try {
 			pre = connection.prepareStatement(sql);
 			result = pre.executeQuery();
@@ -79,10 +79,10 @@ public class InsertData {
 	}
 
 	// lưu các đối tượng đã xử lý vào database
-	public int addObject() {
+	public void addObject() {
 		ArrayList<String> listEmp = loadTextFromStaging();
-		String sql = "insert into datawarehouse.dataobject value(?,?,?,?,?,?,?,?)";
-		int kq = 0;
+		connection = connectDataConfig.connectDataWarehouse();
+		String sql = "insert into datawarehouse.data_warehouse value(?,?,?,?,?,?,?,?)";
 		try {
 			pre = connection.prepareStatement(sql);
 			for (String line : listEmp) {
@@ -105,17 +105,23 @@ public class InsertData {
 				pre.setDouble(6, salary);
 				pre.setString(7, phoneNumber);
 				pre.setString(8, city);
-				kq = pre.executeUpdate();
+				pre.executeUpdate();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		System.out.println("insert sucess");
-		return kq;
 	}
 
 	public static void main(String[] args) {
 		InsertData insert = new InsertData();
 		insert.addText();
+		/*
+		ArrayList<String> loadStaging = insert.loadTextFromStaging();
+		for (String st : loadStaging) {
+			System.out.println(st);
+		}
+		*/
+		insert.addObject();
 	}
 }

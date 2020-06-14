@@ -26,7 +26,6 @@ public class DBConnection {
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
-			
 		}
 		return connection;
 	}
