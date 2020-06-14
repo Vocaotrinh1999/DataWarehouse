@@ -110,7 +110,7 @@ public class InsertData {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		System.out.println("insert sucess");
+		System.out.println("insert to data warehouse sucess");
 	}
 
 	public static void main(String[] args) {
