@@ -50,7 +50,7 @@ public class InsertData {
 			File file = new File("data"); // ghi log
 			File[] listFile = file.listFiles();
 			for (File file2 : listFile) {
-				pre2.setString(1, file2.getPath());
+				pre2.setString(1, file2.getName());
 				pre2.executeUpdate();
 			}
 			System.out.println("sucess");
