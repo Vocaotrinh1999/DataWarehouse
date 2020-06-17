@@ -65,11 +65,9 @@ public class InsertData {
 			System.out.println("File Name:"+fileName+"  "+fileLocation);
 			String text = connectDataConfig.readFileFromFolder(fileLocation);
 			String[] data = text.split("\n");
-			for (String d : data) {
-				if (!d.startsWith("ID")) { // loai bo header
-					pre.setString(1, d);
-					pre.executeUpdate();
-				}
+			for (int i = 1; i < data.length; i++) { // chay tu 1 de loai bo header
+				pre.setString(1, data[i]);
+				pre.execute();
 			}
 			pre3 = connection2.prepareStatement(sql3);
 			pre3.setString(1, "ER");
@@ -97,13 +95,17 @@ public class InsertData {
 		return listST;
 	}
 
-	// lưu các đối tượng đã xử lý vào database
-	public void addObject() {
+	// lưu các đối tượng lấy từ staging đem xử lý rồi lưu vào data warehouse
+	// cập nhật lại trạng cho load_datawarehouse trong log là TR (Transform Ready)
+	public void insertToDataWareHouse() {
 		ArrayList<String> listEmp = loadTextFromStaging();
-		connection = connectDataConfig.connectDataWarehouse();
-		String sql = "insert into datawarehouse.data_warehouse value(?,?,?,?,?,?,?,?)";
+		connection = connectDataConfig.connectConfigDatabase();
+		connection2 = connectDataConfig.connectDataWarehouse();
+		String sql0 = "select colum_list from datawarehouse_configuration.database_control where target_table = 'student';";
+		String sql1 = "insert into datawarehouse.data_warehouse value(?,?,?,?,?,?,?)";
+		String sql2 = "update datawarehouse_configuration.log set load_staging_status =? where load_datawarehouse_status='NR';";
 		try {
-			pre = connection.prepareStatement(sql);
+			pre = connection2.prepareStatement(sql1);
 			for (String line : listEmp) {
 				String[] arr = line.split(",");
 				int id = Integer.parseInt(arr[0]);
@@ -113,19 +115,20 @@ public class InsertData {
 				String[] date = arr[4].split("/");
 				LocalDate dateOfBirth = LocalDate.of(Integer.parseInt(date[2]), Integer.parseInt(date[0]),
 						Integer.parseInt(date[1]));
-				double salary = Double.parseDouble(arr[5]);
-				String phoneNumber = arr[6];
-				String city = arr[7];
+				String phoneNumber = arr[5];
+				String city = arr[6];
 				pre.setInt(1, id);
 				pre.setString(2, firstName);
 				pre.setString(3, lastName);
 				pre.setString(4, email);
 				pre.setDate(5, Date.valueOf(dateOfBirth));
-				pre.setDouble(6, salary);
-				pre.setString(7, phoneNumber);
-				pre.setString(8, city);
+				pre.setString(6, phoneNumber);
+				pre.setString(7, city);
 				pre.executeUpdate();
 			}
+			pre2 = connection.prepareStatement(sql2);
+			pre2.setString(1, "TR");
+			pre2.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -140,5 +143,6 @@ public class InsertData {
 		 */
 		//insert.insertToLog();
 		//insert.addText();
+		insert.insertToDataWareHouse();
 	}
 }
