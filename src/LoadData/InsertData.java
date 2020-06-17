@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class InsertData {
 	ConnectDataConfig connectDataConfig;
-	PreparedStatement pre, pre2;
+	PreparedStatement pre, pre2,pre3;
 	Connection connection, connection2;
 	ResultSet result;
 
@@ -20,39 +20,60 @@ public class InsertData {
 		connectDataConfig = new ConnectDataConfig();
 	}
 
-	public String readFromDataFolder() {
-		String result = "";
+	// lấy các file trong thư mục data đã dowload đem ra thêm vào log
+	public void insertToLog() {
+		String sql = "insert into datawarehouse_configuration.log(file_name,file_location,load_staging_status,load_datawarehouse_status) values(?,?,?,?);";
+		connection = connectDataConfig.connectConfigDatabase();
 		File file = new File("data");
 		File[] listFile = file.listFiles();
-		for (File file2 : listFile) {
-			result += connectDataConfig.readFileFromFolder(file2.getPath());
+		try {
+			pre = connection.prepareStatement(sql);
+			for (File file2 : listFile) {
+				pre.setString(1,file2.getName());
+				pre.setString(2, file2.getPath());
+				pre.setString(3, "NR");//Not Ready for extract
+				pre.setString(4, "NR");//Not Ready for extract
+				pre.execute();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return result;
+		System.out.println("insert thanh cong");
 	}
 
-	// lấy nội dung các text lấy được đem vào lưu trong database stagging và ghi log
-	public void addText() { // add text from source to database stagging
-		String result = readFromDataFolder();
+	// lấy nội dung các text lấy được đem vào lưu trong database stagging và cập
+	// nhật log
+	public void addText() {
+		//lay noi dung file text co trng thai satus bang NR dem vao insert vao staging
 		String sql = "insert into datawarehouse_staging.staging(text) value(?)";
-		String sql2 = "insert into datawarehouse_configuration.log(file_name,status) values(?,'ER')";
-		String[] data = result.split("\n");
+		//lay ra thong tin ten va dia chi file text co trang thai NR
+		String sql2 = "select * from datawarehouse_configuration.log where load_staging_status='NR';";
+		//cap nhat trang thai bang cach them vao 1 dong tuong tu voi trang thai bang ER
+		String sql3 = "update datawarehouse_configuration.log set load_staging_status =? where load_staging_status='NR';";
 		connection = connectDataConfig.connectDataStaging();
 		connection2 = connectDataConfig.connectConfigDatabase();
 		try {
 			pre = connection.prepareStatement(sql);
 			pre2 = connection2.prepareStatement(sql2);
+			result = pre2.executeQuery();
+			String fileName = "" ;
+			String fileLocation = "";
+			while(result.next()) {
+				fileName =  result.getString("file_name");
+				fileLocation =  result.getString("file_location");
+			}
+			System.out.println("File Name:"+fileName+"  "+fileLocation);
+			String text = connectDataConfig.readFileFromFolder(fileLocation);
+			String[] data = text.split("\n");
 			for (String d : data) {
-				if (!d.startsWith("Emp")) { // loai bo header
+				if (!d.startsWith("ID")) { // loai bo header
 					pre.setString(1, d);
 					pre.executeUpdate();
 				}
 			}
-			File file = new File("data"); // ghi log
-			File[] listFile = file.listFiles();
-			for (File file2 : listFile) {
-				pre2.setString(1, file2.getName());
-				pre2.executeUpdate();
-			}
+			pre3 = connection2.prepareStatement(sql3);
+			pre3.setString(1, "ER");
+			pre3.executeUpdate();
 			System.out.println("sucess");
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -113,13 +134,11 @@ public class InsertData {
 
 	public static void main(String[] args) {
 		InsertData insert = new InsertData();
-		insert.addText();
 		/*
-		ArrayList<String> loadStaging = insert.loadTextFromStaging();
-		for (String st : loadStaging) {
-			System.out.println(st);
-		}
-		*/
-		insert.addObject();
+		 * ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
+		 * : loadStaging) { System.out.println(st); }
+		 */
+		//insert.insertToLog();
+		//insert.addText();
 	}
 }
