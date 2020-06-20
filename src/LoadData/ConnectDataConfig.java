@@ -32,6 +32,7 @@ public class ConnectDataConfig {
 		}
 		return result;
 	}
+
 	public Connection connectConfigDatabase() {
 		String result;
 		Connection connection = null;
@@ -80,15 +81,15 @@ public class ConnectDataConfig {
 		ConnectInfor connectInfor = getConnectionDataConfig().get(2);
 		System.out.println(connectInfor.getUrl());
 		Connection connection = db.getConnection(connectInfor.getDriver(), connectInfor.getUrl(),
-								connectInfor.getUsername(), connectInfor.getPassword());
+				connectInfor.getUsername(), connectInfor.getPassword());
 		return connection;
 	}
-	
+
 	public Connection connectDataWarehouse() {
 		ConnectInfor connectInfor = getConnectionDataConfig().get(1);
 		System.out.println(connectInfor.getUrl());
 		Connection connection = db.getConnection(connectInfor.getDriver(), connectInfor.getUrl(),
-								connectInfor.getUsername(), connectInfor.getPassword());
+				connectInfor.getUsername(), connectInfor.getPassword());
 		return connection;
 	}
 
