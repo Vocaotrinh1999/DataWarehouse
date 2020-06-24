@@ -22,7 +22,31 @@ public class InsertData {
 		// connection = new DAO().openConnection();
 		connectDataConfig = new ConnectDataConfig();
 	}
-
+	public void insertToDBControl() {
+		connection = connectDataConfig.connectConfigDatabase();
+		String sql = "inssert into datawarehouse_configuration.database_control(name,location,target_table,file_type,delimeter,import_dir,sucess_Dir,error_Dir)"
+		+"values(?,?,?,?,?,?,?,?)";
+		String importDir = "F:\\anh\\datawarehouse\\data";
+		String sucessDir = "F:\\anh\\datawarehouse\\sucess";
+		String errorDir = "F:\\anh\\datawarehouse\\error";
+		File file = new File(importDir);
+		File[] listFile = file.listFiles();
+		try {
+			for (File f : listFile) {
+				pre = connection.prepareStatement(sql);
+				String fileName = f.getName();
+				String fileLocation = f.getAbsolutePath();
+				String targetTable = fileName.split("_")[0];//cat theo _ ten file => sinhvien
+				String[] splitFileType = fileName.split("\\.");
+				String fileType = splitFileType[splitFileType.length-1];
+				String delimeter = ",";
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
 	
 	// lay thong tin databasecontrol table
 	private ArrayList<ControlModel> getControlModel() {
@@ -42,9 +66,8 @@ public class InsertData {
 				String importDir = result.getString(7);
 				String sucessDir = result.getString(8);
 				String errorDir = result.getString(9);
-				String columList = result.getString(10);
 				ControlModel model = new ControlModel(id, fileName, fileLocation, targetTable, fileType, delimeter,
-						importDir, sucessDir, errorDir, columList);
+						importDir, sucessDir, errorDir);
 				controls.add(model);
 			}
 		} catch (Exception e) {
@@ -215,6 +238,7 @@ public class InsertData {
 		 
 		// insert.insertToLog();
 		//insert.addText();
-		insert.insertToDataWareHouse();
+		//insert.insertToDataWareHouse();
+		insert.insertToDBControl();
 	}
 }

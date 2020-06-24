@@ -11,10 +11,9 @@ public class ControlModel {
 	private String importDir;
 	private String sucessDir;
 	private String errorDir;
-	private String columList;
 	
 	public ControlModel(int id, String fileName, String fileLocation, String targetTable, String fileType,
-			String delimeter, String importDir, String sucessDir, String errorDir, String columList) {
+			String delimeter, String importDir, String sucessDir, String errorDir) {
 		super();
 		this.id = id;
 		this.fileName = fileName;
@@ -25,7 +24,6 @@ public class ControlModel {
 		this.importDir = importDir;
 		this.sucessDir = sucessDir;
 		this.errorDir = errorDir;
-		this.columList = columList;
 	}
 
 	public int getId() {
@@ -100,18 +98,11 @@ public class ControlModel {
 		this.errorDir = errorDir;
 	}
 
-	public String getColumList() {
-		return columList;
-	}
-
-	public void setColumList(String columList) {
-		this.columList = columList;
-	}
 
 	@Override
 	public String toString() {
 		return "ControlModel [id=" + id + ", fileName=" + fileName + ", fileLocation=" + fileLocation + ", targetTable="
 				+ targetTable + ", fileType=" + fileType + ", delimeter=" + delimeter + ", importDir=" + importDir
-				+ ", sucessDir=" + sucessDir + ", errorDir=" + errorDir + ", columList=" + columList + "]";
+				+ ", sucessDir=" + sucessDir + ", errorDir=" + errorDir + "]";
 	}
 }
