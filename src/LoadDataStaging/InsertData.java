@@ -24,7 +24,7 @@ public class InsertData {
 	}
 	public void insertToDBControl() {
 		connection = connectDataConfig.connectConfigDatabase();
-		String sql = "inssert into datawarehouse_configuration.database_control(name,location,target_table,file_type,delimeter,import_dir,sucess_Dir,error_Dir)"
+		String sql = "insert into datawarehouse_configuration.database_control(name,location,target_table,file_type,delimeter,import_dir,sucess_Dir,error_Dir)"
 		+"values(?,?,?,?,?,?,?,?)";
 		String importDir = "F:\\anh\\datawarehouse\\data";
 		String sucessDir = "F:\\anh\\datawarehouse\\sucess";
@@ -45,8 +45,12 @@ public class InsertData {
 				pre.setString(3, targetTable);
 				pre.setString(4, fileType);
 				pre.setString(5, delimeter);
-				
+				pre.setString(6, importDir);
+				pre.setString(7, sucessDir);
+				pre.setString(8, errorDir);
+				pre.execute();
 			}
+			System.out.println("insert sucess");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
