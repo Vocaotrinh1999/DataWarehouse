@@ -17,7 +17,7 @@ public class ConnectDataConfig {
 
 	DBConnection db;
 	PreparedStatement pre;
-
+	//
 	public ConnectDataConfig() {
 		db = new DBConnection();
 	}

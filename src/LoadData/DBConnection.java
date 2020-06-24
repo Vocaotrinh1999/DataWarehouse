@@ -8,7 +8,7 @@ public class DBConnection {
 
 	
 	private static Connection connection = null;
-	
+	//
 	//phương thức dùng để kết nối vào csdl
 	//use mysql database
 	public static Connection getConnection(String driver,String url,String username,String password) {

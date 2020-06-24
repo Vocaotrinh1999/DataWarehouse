@@ -1,7 +1,7 @@
 package Model;
 
 public class LogModel {
-
+	//
 	private int id;
 	private String fileName;
 	private String fileLocation;

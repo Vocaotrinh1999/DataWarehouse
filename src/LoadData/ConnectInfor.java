@@ -6,7 +6,7 @@ public class ConnectInfor {
 	private String url;
 	private String username;
 	private String password;
-	
+	//
 	public ConnectInfor(String driver, String url, String username, String password) {
 		super();
 		this.driver = driver;

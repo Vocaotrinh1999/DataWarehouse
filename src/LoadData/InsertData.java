@@ -161,8 +161,8 @@ public class InsertData {
 		connection = connectDataConfig.connectConfigDatabase();
 		connection2 = connectDataConfig.connectDataWarehouse();
 		//String sql0 = "select colum_list from datawarehouse_configuration.database_control where target_table = 'student';";
-		String sql1 = "insert into datawarehouse.data_warehouse value(?,?,?,?,?,?,?,?,?,?)";
-		String sql2 = "update datawarehouse_configuration.log set load_staging_status =? where load_datawarehouse_status='NR';";
+		String sql1 = "insert into datawarehouse.data_warehouse(stt,mssv,firstName,lastName,dateOfBirth,class,className,phoneNumber,email,city) value(?,?,?,?,?,?,?,?,?,?)";
+		String sql2 = "update datawarehouse_configuration.log set load_datawarehouse_status =? where load_staging_status='ER';";
 		try {
 			for (String line : listEmp) {
 				pre = connection2.prepareStatement(sql1);
@@ -171,24 +171,26 @@ public class InsertData {
 				int mssv = Integer.parseInt(arr[1]);
 				String firstName = arr[2];
 				String lastName = arr[3];
-				Date date = Date.valueOf(arr[4]);
-				String className = arr[5];
-				String phoneNumber = arr[6];
-				String email = arr[7];
-				String city = arr[8];
-				String note = arr[9];
+				String date = arr[4];
+				String classCode = arr[5];
+				String className = arr[6];
+				String phoneNumber = arr[7];
+				String email = arr[8];
+				String city = arr[9];
+				String note = arr[10];
 				
 				pre.setInt(1, stt);
 				pre.setInt(2, mssv);
 				pre.setString(3, firstName);
 				pre.setString(4, lastName);
-				pre.setDate(5, date);
-				pre.setString(6, className);
-				pre.setString(7, phoneNumber);
-				pre.setString(8, email);
-				pre.setString(9, city);
-				pre.setString(10, note);
-				pre.executeUpdate();
+				pre.setString(5, date);
+				pre.setString(6, classCode);
+				pre.setString(7, className);
+				pre.setString(8, phoneNumber);
+				pre.setString(9, email);
+				pre.setString(10, city);
+				//pre.setString(11, note);
+				//pre.executeUpdate();
 			}
 			pre2 = connection.prepareStatement(sql2);
 			pre2.setString(1, "TR");
@@ -207,7 +209,7 @@ public class InsertData {
 		 * System.out.println(controlModel.toString()); }
 		 */
 		
-		 //ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
+		// ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
 		  //: loadStaging) { System.out.println(st); }
 		 
 		// insert.insertToLog();
