@@ -22,24 +22,29 @@ public class InsertData {
 		// connection = new DAO().openConnection();
 		connectDataConfig = new ConnectDataConfig();
 	}
+
 	public void insertToDBControl() {
 		connection = connectDataConfig.connectConfigDatabase();
 		String sql = "insert into datawarehouse_configuration.database_control(name,location,target_table,file_type,delimeter,import_dir,sucess_Dir,error_Dir)"
-		+"values(?,?,?,?,?,?,?,?)";
+				+ "values(?,?,?,?,?,?,?,?)";
 		String importDir = "F:\\anh\\datawarehouse\\data";
 		String sucessDir = "F:\\anh\\datawarehouse\\sucess";
 		String errorDir = "F:\\anh\\datawarehouse\\error";
 		File file = new File(importDir);
 		File[] listFile = file.listFiles();
+		String textFileName = "";
+		String textSendMail = "";
+		int result = 0;
 		try {
 			for (File f : listFile) {
 				pre = connection.prepareStatement(sql);
 				String fileName = f.getName();
+				textFileName += fileName + "\n";
 				String fileLocation = f.getAbsolutePath();
-				String targetTable = fileName.split("_")[0];//cat theo _ ten file => sinhvien
+				String targetTable = fileName.split("_")[0];// cat theo _ ten file => sinhvien
 				String[] splitFileType = fileName.split("\\.");
-				String fileType = splitFileType[splitFileType.length-1];
-				String delimeter = ",";//gia su dieu la file csv
+				String fileType = splitFileType[splitFileType.length - 1];
+				String delimeter = ",";// gia su dieu la file csv
 				pre.setString(1, fileName);
 				pre.setString(2, fileLocation);
 				pre.setString(3, targetTable);
@@ -48,15 +53,21 @@ public class InsertData {
 				pre.setString(6, importDir);
 				pre.setString(7, sucessDir);
 				pre.setString(8, errorDir);
-				pre.execute();
+				result = pre.executeUpdate();
 			}
-			System.out.println("insert sucess");
+			if (result > 0) {
+				System.out.println("insert sucess");
+				textSendMail = "Đã thêm vào database control các file" + textFileName + "\n vào database control";
+			} else {
+				textSendMail = "Thêm vào database control bị lỗi cần kiểm tra lại";
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	// lay thong tin databasecontrol table
 	private ArrayList<ControlModel> getControlModel() {
 		ArrayList<ControlModel> controls = new ArrayList<ControlModel>();
@@ -193,7 +204,9 @@ public class InsertData {
 		ArrayList<String> listEmp = loadTextFromStaging();
 		connection = connectDataConfig.connectConfigDatabase();
 		connection2 = connectDataConfig.connectDataWarehouse();
-		//String sql0 = "select colum_list from datawarehouse_configuration.database_control where target_table = 'student';";
+		// String sql0 = "select colum_list from
+		// datawarehouse_configuration.database_control where target_table =
+		// 'student';";
 		String sql1 = "insert into datawarehouse.data_warehouse(stt,mssv,firstName,lastName,dateOfBirth,class,className,phoneNumber,email,city) value(?,?,?,?,?,?,?,?,?,?)";
 		String sql2 = "update datawarehouse_configuration.log set load_datawarehouse_status =? where load_staging_status='ER';";
 		try {
@@ -211,7 +224,7 @@ public class InsertData {
 				String email = arr[8];
 				String city = arr[9];
 				String note = arr[10];
-				
+
 				pre.setInt(1, stt);
 				pre.setInt(2, mssv);
 				pre.setString(3, firstName);
@@ -222,8 +235,8 @@ public class InsertData {
 				pre.setString(8, phoneNumber);
 				pre.setString(9, email);
 				pre.setString(10, city);
-				//pre.setString(11, note);
-				//pre.executeUpdate();
+				// pre.setString(11, note);
+				// pre.executeUpdate();
 			}
 			pre2 = connection.prepareStatement(sql2);
 			pre2.setString(1, "TR");
@@ -241,13 +254,13 @@ public class InsertData {
 		 * (ControlModel controlModel : controls) {
 		 * System.out.println(controlModel.toString()); }
 		 */
-		
+
 		// ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
-		  //: loadStaging) { System.out.println(st); }
-		 
+		// : loadStaging) { System.out.println(st); }
+
 		// insert.insertToLog();
-		//insert.addText();
-		//insert.insertToDataWareHouse();
+		// insert.addText();
+		// insert.insertToDataWareHouse();
 		insert.insertToDBControl();
 	}
 }
