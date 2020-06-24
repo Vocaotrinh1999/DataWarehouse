@@ -39,7 +39,12 @@ public class InsertData {
 				String targetTable = fileName.split("_")[0];//cat theo _ ten file => sinhvien
 				String[] splitFileType = fileName.split("\\.");
 				String fileType = splitFileType[splitFileType.length-1];
-				String delimeter = ",";
+				String delimeter = ",";//gia su dieu la file csv
+				pre.setString(1, fileName);
+				pre.setString(2, fileLocation);
+				pre.setString(3, targetTable);
+				pre.setString(4, fileType);
+				pre.setString(5, delimeter);
 				
 			}
 		} catch (Exception e) {
