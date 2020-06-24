@@ -1,4 +1,4 @@
-package LoadData;
+package LoadDataStaging;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

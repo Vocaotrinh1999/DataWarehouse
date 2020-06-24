@@ -1,4 +1,4 @@
-package LoadData;
+package LoadDataStaging;
 
 public class ConnectInfor {
 

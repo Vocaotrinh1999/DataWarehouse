@@ -1,4 +1,4 @@
-package LoadData;
+package LoadDataStaging;
 
 import java.io.File;
 import java.sql.Connection;
@@ -23,6 +23,7 @@ public class InsertData {
 		connectDataConfig = new ConnectDataConfig();
 	}
 
+	
 	// lay thong tin databasecontrol table
 	private ArrayList<ControlModel> getControlModel() {
 		ArrayList<ControlModel> controls = new ArrayList<ControlModel>();

@@ -1,4 +1,4 @@
-package LoadData;
+package LoadDataStaging;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,8 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
-import LoadData.ConnectInfor;
-import LoadData.DBConnection;
+import LoadDataStaging.ConnectInfor;
+import LoadDataStaging.DBConnection;
 
 public class ConnectDataConfig {
 
