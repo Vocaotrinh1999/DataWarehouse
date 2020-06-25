@@ -21,13 +21,13 @@ public class SendMailTLS {
 		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication("vocaotrinh1999@gmail.com", "15062015");
+				return new PasswordAuthentication("Vocaotrinh1999@gmail.com", "15062015");
 			}
 		});
 		try {
 			Message message = new MimeMessage(session);
 			message.setHeader("Content-Type", "text/plain; charset=UTF-8");
-			message.setFrom(new InternetAddress("vocaotrinh1999@gmail.com"));
+			message.setFrom(new InternetAddress("Vocaotrinh1999@gmail.com"));
 			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
 			message.setSubject(subject);
 			message.setText(text);

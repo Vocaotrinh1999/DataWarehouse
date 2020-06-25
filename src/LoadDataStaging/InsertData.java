@@ -9,18 +9,21 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+import GuiMail.SendMailTLS;
 import Model.ControlModel;
 import Model.LogModel;
 
 public class InsertData {
 	ConnectDataConfig connectDataConfig;
+	SendMailTLS sendMail;
 	PreparedStatement pre, pre2, pre3;
 	Connection connection, connection2;
 	ResultSet result;
-
+	
 	public InsertData() {
 		// connection = new DAO().openConnection();
 		connectDataConfig = new ConnectDataConfig();
+		sendMail = new SendMailTLS();
 	}
 
 	public void insertToDBControl() {
@@ -58,11 +61,12 @@ public class InsertData {
 			if (result > 0) {
 				System.out.println("insert sucess");
 				textSendMail = "Đã thêm vào database control các file" + textFileName + "\n vào database control";
+				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "Các file đã insert thành công vào db control", textSendMail);
 			} else {
 				System.out.println("insert fail");
 				textSendMail = "Thêm vào database control bị lỗi cần kiểm tra lại";
+				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "load vào db control bị lỗi cần kiểm tra lại", textSendMail);
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -97,7 +101,7 @@ public class InsertData {
 		return controls;
 	}
 
-	// lấy các file trong thư mục data đã dowload đem ra thêm vào log
+	// lấy các file đã dowload trong thư mục data đã lưu trong db control đem ra thêm vào log
 	public void insertToLog() {
 		String sql = "insert into datawarehouse_configuration.log(file_name,file_location,load_staging_status,load_datawarehouse_status) values(?,?,?,?);";
 		connection = connectDataConfig.connectConfigDatabase();
@@ -177,9 +181,24 @@ public class InsertData {
 		}
 	}
 
-	// xoa du lieu trung truoc khi load qua dw
-	public void deleteDuplicate() {
+	// xóa dữ liệu trùng trong data staging
+	//hai dong du lieu giong nhau chi giu lai 1 dong
+	public void deleteDuplicateInStaging() {
 		connection = connectDataConfig.connectDataStaging();
+		String sql = "DELETE s1 FROM datawarehouse_staging.staging s1 " + 
+				"INNER JOIN datawarehouse_staging.staging s2 " + 
+				"WHERE s1.id < s2.id AND s1.text = s2.text;";
+		try {
+			pre = connection.prepareStatement(sql);
+			int soDongTrung = pre.executeUpdate();
+			if(soDongTrung >0) {
+				System.out.println("so dong trung da xoa la : "+ soDongTrung);
+			}else {
+				System.out.println("xoa dong trung bi loi hoac khong co dong nao trung can xem lai");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	// lấy nội dung các đoạn text đã lưu trong csdl để chuyển đổi thành object
