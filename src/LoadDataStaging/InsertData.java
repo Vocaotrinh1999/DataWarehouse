@@ -59,9 +59,10 @@ public class InsertData {
 				System.out.println("insert sucess");
 				textSendMail = "Đã thêm vào database control các file" + textFileName + "\n vào database control";
 			} else {
+				System.out.println("insert fail");
 				textSendMail = "Thêm vào database control bị lỗi cần kiểm tra lại";
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -249,11 +250,11 @@ public class InsertData {
 
 	public static void main(String[] args) {
 		InsertData insert = new InsertData();
-		/*
-		 * ArrayList<ControlModel> controls = insert.getControlModel(); for
-		 * (ControlModel controlModel : controls) {
-		 * System.out.println(controlModel.toString()); }
-		 */
+
+		ArrayList<ControlModel> controls = insert.getControlModel();
+		for (ControlModel controlModel : controls) {
+			System.out.println(controlModel.toString());
+		}
 
 		// ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
 		// : loadStaging) { System.out.println(st); }
@@ -261,6 +262,6 @@ public class InsertData {
 		// insert.insertToLog();
 		// insert.addText();
 		// insert.insertToDataWareHouse();
-		insert.insertToDBControl();
+		// insert.insertToDBControl();
 	}
 }

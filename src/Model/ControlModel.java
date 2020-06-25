@@ -11,7 +11,7 @@ public class ControlModel {
 	private String importDir;
 	private String sucessDir;
 	private String errorDir;
-	
+
 	public ControlModel(int id, String fileName, String fileLocation, String targetTable, String fileType,
 			String delimeter, String importDir, String sucessDir, String errorDir) {
 		super();
@@ -98,11 +98,9 @@ public class ControlModel {
 		this.errorDir = errorDir;
 	}
 
-
 	@Override
 	public String toString() {
-		return "ControlModel [id=" + id + ", fileName=" + fileName + ", fileLocation=" + fileLocation + ", targetTable="
-				+ targetTable + ", fileType=" + fileType + ", delimeter=" + delimeter + ", importDir=" + importDir
-				+ ", sucessDir=" + sucessDir + ", errorDir=" + errorDir + "]";
+		return id + "  " + fileName + "  " + fileLocation + "  " + targetTable + "  " + fileType + "  " + delimeter
+				+ "  " + importDir + "  " + sucessDir + "  " + errorDir;
 	}
 }
