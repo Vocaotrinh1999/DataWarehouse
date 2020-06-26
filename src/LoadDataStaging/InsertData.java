@@ -19,11 +19,14 @@ public class InsertData {
 	PreparedStatement pre, pre2, pre3;
 	Connection connection, connection2;
 	ResultSet result;
-	
+	String emailSendTo, subject,textMail;
 	public InsertData() {
 		// connection = new DAO().openConnection();
 		connectDataConfig = new ConnectDataConfig();
 		sendMail = new SendMailTLS();
+		emailSendTo = "17130256@st.hcmuaf.edu.vn";
+		subject ="";
+		textMail ="";
 	}
 
 	public void insertToDBControl() {
@@ -36,7 +39,6 @@ public class InsertData {
 		File file = new File(importDir);
 		File[] listFile = file.listFiles();
 		String textFileName = "";
-		String textSendMail = "";
 		int result = 0;
 		try {
 			for (File f : listFile) {
@@ -60,12 +62,12 @@ public class InsertData {
 			}
 			if (result > 0) {
 				System.out.println("insert sucess");
-				textSendMail = "Đã thêm vào database control các file" + textFileName + "\n vào database control";
-				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "Các file đã insert thành công vào db control", textSendMail);
+				textMail = "Đã thêm vào database control các file" + textFileName + "\n vào database control";
+				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "Các file đã insert thành công vào db control", textMail);
 			} else {
 				System.out.println("insert fail");
-				textSendMail = "Thêm vào database control bị lỗi cần kiểm tra lại";
-				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "load vào db control bị lỗi cần kiểm tra lại", textSendMail);
+				textMail = "Thêm vào database control bị lỗi cần kiểm tra lại";
+				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "load vào db control bị lỗi cần kiểm tra lại", textMail);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -218,22 +220,18 @@ public class InsertData {
 		return listST;
 	}
 
-	// lưu các đối tượng lấy từ staging đem xử lý rồi lưu vào data warehouse
-	// cập nhật lại trạng cho load_datawarehouse trong log là TR (Transform Ready)
-	public void insertToDataWareHouse() {
+	// lưu các đối tượng lấy từ staging đem transform rồi lưu vào data student trước khi qua bước data warehouse
+	public void insertToStudent() {
 		ArrayList<String> listEmp = loadTextFromStaging();
 		connection = connectDataConfig.connectConfigDatabase();
-		connection2 = connectDataConfig.connectDataWarehouse();
-		// String sql0 = "select colum_list from
-		// datawarehouse_configuration.database_control where target_table =
-		// 'student';";
-		String sql1 = "insert into datawarehouse.data_warehouse(stt,mssv,firstName,lastName,dateOfBirth,class,className,phoneNumber,email,city) value(?,?,?,?,?,?,?,?,?,?)";
-		String sql2 = "update datawarehouse_configuration.log set load_datawarehouse_status =? where load_staging_status='ER';";
+		String sql1 = "insert into datawarehouse_staging.data_student(mssv,firstName,lastName,dateOfBirth,classCode,className,phoneNumber,email,city,note) "
+				+ "value(?,?,?,?,?,?,?,?,?,?)";
+		int rowInsert = 0;
+		String textMail = "";
 		try {
 			for (String line : listEmp) {
-				pre = connection2.prepareStatement(sql1);
+				pre = connection.prepareStatement(sql1);
 				String[] arr = line.split(",");
-				int stt = Integer.parseInt(arr[0]);
 				int mssv = Integer.parseInt(arr[1]);
 				String firstName = arr[2];
 				String lastName = arr[3];
@@ -245,22 +243,29 @@ public class InsertData {
 				String city = arr[9];
 				String note = arr[10];
 
-				pre.setInt(1, stt);
-				pre.setInt(2, mssv);
-				pre.setString(3, firstName);
-				pre.setString(4, lastName);
-				pre.setString(5, date);
-				pre.setString(6, classCode);
-				pre.setString(7, className);
-				pre.setString(8, phoneNumber);
-				pre.setString(9, email);
-				pre.setString(10, city);
-				// pre.setString(11, note);
-				// pre.executeUpdate();
+				pre.setInt(1, mssv);
+				pre.setString(2, firstName);
+				pre.setString(3, lastName);
+				pre.setString(4, date);
+				pre.setString(5, classCode);
+				pre.setString(6, className);
+				pre.setString(7, phoneNumber);
+				pre.setString(8, email);
+				pre.setString(9, city);
+				pre.setString(10, note);
+				rowInsert += pre.executeUpdate();
 			}
-			pre2 = connection.prepareStatement(sql2);
-			pre2.setString(1, "TR");
-			pre2.executeUpdate();
+			if(rowInsert == listEmp.size()) {
+				System.out.println("so dong insert vao la "+rowInsert);//thanh cong
+				subject ="Insert to db student thành công";
+				textMail = "Đã insert thành công : "+ rowInsert+" vào db student";
+				sendMail.sendMail(emailSendTo, subject, textMail);
+			}else if(rowInsert < listEmp.size()) {
+				subject ="Insert to db có thể thiếu số dòng so vs staging cần kiểm tra";
+				int conLai = listEmp.size() -rowInsert ;
+				textMail = "Đã insert thành công : "+ rowInsert+" dòng vào db student và còn thiếu : "+conLai+" dòng" ;
+				sendMail.sendMail(emailSendTo, subject, textMail);
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -270,10 +275,10 @@ public class InsertData {
 	public static void main(String[] args) {
 		InsertData insert = new InsertData();
 
-		ArrayList<ControlModel> controls = insert.getControlModel();
-		for (ControlModel controlModel : controls) {
-			System.out.println(controlModel.toString());
-		}
+		//ArrayList<ControlModel> controls = insert.getControlModel();
+		//for (ControlModel controlModel : controls) {
+		//	System.out.println(controlModel.toString());
+		//}
 
 		// ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
 		// : loadStaging) { System.out.println(st); }
@@ -282,5 +287,6 @@ public class InsertData {
 		// insert.addText();
 		// insert.insertToDataWareHouse();
 		// insert.insertToDBControl();
+		insert.insertToStudent();
 	}
 }
