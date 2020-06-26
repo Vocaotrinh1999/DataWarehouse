@@ -30,7 +30,7 @@ public class InsertData {
 		connection = connectDataConfig.connectConfigDatabase();
 		String sql = "insert into datawarehouse_configuration.database_control(name,location,target_table,file_type,delimeter,import_dir,sucess_Dir,error_Dir)"
 				+ "values(?,?,?,?,?,?,?,?)";
-		String importDir = "F:\\anh\\datawarehouse\\data";
+		String importDir = "..\\data";
 		String sucessDir = "F:\\anh\\datawarehouse\\sucess";
 		String errorDir = "F:\\anh\\datawarehouse\\error";
 		File file = new File(importDir);
@@ -270,10 +270,10 @@ public class InsertData {
 	public static void main(String[] args) {
 		InsertData insert = new InsertData();
 
-		ArrayList<ControlModel> controls = insert.getControlModel();
+		/*ArrayList<ControlModel> controls = insert.getControlModel();
 		for (ControlModel controlModel : controls) {
 			System.out.println(controlModel.toString());
-		}
+		}*/
 
 		// ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
 		// : loadStaging) { System.out.println(st); }
@@ -281,6 +281,6 @@ public class InsertData {
 		// insert.insertToLog();
 		// insert.addText();
 		// insert.insertToDataWareHouse();
-		// insert.insertToDBControl();
+		 insert.insertToDBControl();
 	}
 }

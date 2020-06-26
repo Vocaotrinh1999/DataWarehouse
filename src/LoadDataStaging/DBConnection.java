@@ -3,6 +3,7 @@ package LoadDataStaging;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DBConnection {
 
@@ -30,6 +31,7 @@ public class DBConnection {
 		return connection;
 	}
 	
+
 	public static void main(String[] args) {
 		DBConnection db = new DBConnection();
 	}

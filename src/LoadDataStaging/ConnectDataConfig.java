@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 import LoadDataStaging.ConnectInfor;
@@ -17,6 +18,7 @@ public class ConnectDataConfig {
 
 	DBConnection db;
 	PreparedStatement pre;
+
 	//
 	public ConnectDataConfig() {
 		db = new DBConnection();
@@ -96,10 +98,18 @@ public class ConnectDataConfig {
 		return connection;
 	}
 
+	// thuc thi lenh sql
+	public void perform(String sql) throws Exception {
+		Connection connect = connectConfigDatabase();
+		Statement stmt = connect.createStatement();
+		stmt.executeUpdate(sql);
+		stmt.close();
+	}
+
 	public static void main(String[] args) {
 		ConnectDataConfig connect = new ConnectDataConfig();
 		Connection c1 = connect.connectConfigDatabase();
-		if(c1 != null) {
+		if (c1 != null) {
 			System.out.println("ket noi thanh cong");
 		}
 		connect.connectDataStaging();
