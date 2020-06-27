@@ -11,8 +11,10 @@ import LoadDataStaging.InsertData;
 
 public class Download {
 	private ConnectDataConfig connectDataConfig;
+	private InsertData insert;
 	public Download() {
 		connectDataConfig = new ConnectDataConfig();
+		insert = new InsertData();
 	}
 	static {
 		try {
@@ -60,18 +62,19 @@ public class Download {
 		File file = new File(fileProperties.getLocalDir());
 		File[] listFile = file.listFiles();
 		int count = 0;
+		insert.insertLog(file);
 		for (File file2 : listFile) {
 			if(file2.length() == 0) {
 				//send mall
 			}else {
-				insertLog(file2);
+				//insertLog(file2);
 				count ++;
 			}
 		}
 		System.out.println("Insert "+count+" file to log");
 		System.out.println("Download File Success.");
 	}
-	
+	//phương thức này còn bị lỗi
 	public void insertLog(File file) {
 		String sql = "insert into datawarehouse_configuration.log(file_name,file_location,load_staging_status,load_datawarehouse_status) values('"+file.getName()+"','"+file.getAbsolutePath()+"','"+"NR"+"','"+"NR"+"');";
 		try {

@@ -104,17 +104,17 @@ public class InsertData {
 	}
 
 	// lấy các file đã dowload trong thư mục data đã lưu trong db control đem ra thêm vào log
-	public void insertToLog() {
-		String sql = "insert into datawarehouse_configuration.log(file_name,file_location,load_staging_status,load_datawarehouse_status) values(?,?,?,?);";
-		connection = connectDataConfig.connectConfigDatabase();
-		ArrayList<ControlModel> controls = getControlModel();
+	public void insertLog(File file) {
+		String sql = "insert into datawarehouse_configuration.log(file_name,file_location,load_staging_status,load_datawarehouse_status) "
+				+ "values(?,?,'NR','NR');";
+		Connection connection = connectDataConfig.connectConfigDatabase();
 		try {
-			pre = connection.prepareStatement(sql);
-			for (ControlModel control : controls) {
-				pre.setString(1, control.getFileName());
-				pre.setString(2, control.getFileLocation());
-				pre.setString(3, "NR");// Not Ready for extract
-				pre.setString(4, "NR");// Not Ready for transform
+			PreparedStatement pre = connection.prepareStatement(sql);
+			File[] listFile = file.listFiles();
+			for (File f2 : listFile) {
+				System.out.println(f2.getAbsolutePath());
+				pre.setString(1, f2.getName());
+				pre.setString(2, f2.getAbsolutePath());
 				pre.execute();
 			}
 		} catch (Exception e) {
@@ -278,10 +278,10 @@ public class InsertData {
 		//for (ControlModel controlModel : controls) {
 		//	System.out.println(controlModel.toString());
 		//}
-		/*ArrayList<ControlModel> controls = insert.getControlModel();
+		ArrayList<ControlModel> controls = insert.getControlModel();
 		for (ControlModel controlModel : controls) {
 			System.out.println(controlModel.toString());
-		}*/
+		}
 		// ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
 		// : loadStaging) { System.out.println(st); }
 
@@ -289,7 +289,7 @@ public class InsertData {
 		// insert.addText();
 		// insert.insertToDataWareHouse();
 		// insert.insertToDBControl();
-		insert.insertToStudent();
-		 insert.insertToDBControl();
+		//insert.insertToStudent();
+		// insert.insertToDBControl();
 	}
 }
