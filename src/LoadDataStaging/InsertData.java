@@ -75,34 +75,6 @@ public class InsertData {
 
 	}
 
-	// lay thong tin databasecontrol table
-	private ArrayList<ControlModel> getControlModel() {
-		ArrayList<ControlModel> controls = new ArrayList<ControlModel>();
-		String sql = "SELECT * FROM datawarehouse_configuration.database_control";
-		connection = connectDataConfig.connectConfigDatabase();
-		try {
-			pre = connection.prepareStatement(sql);
-			result = pre.executeQuery();
-			while (result.next()) {
-				int id = result.getInt(1);
-				String fileName = result.getString(2);
-				String fileLocation = result.getString(3);
-				String targetTable = result.getString(4);
-				String fileType = result.getString(5);
-				String delimeter = result.getString(6);
-				String importDir = result.getString(7);
-				String sucessDir = result.getString(8);
-				String errorDir = result.getString(9);
-				ControlModel model = new ControlModel(id, fileName, fileLocation, targetTable, fileType, delimeter,
-						importDir, sucessDir, errorDir);
-				controls.add(model);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return controls;
-	}
-
 	// lấy các file đã dowload trong thư mục data đã lưu trong db control đem ra thêm vào log
 	public void insertLog(File file) {
 		String sql = "insert into datawarehouse_configuration.log(file_name,file_location,load_staging_status,load_datawarehouse_status) "
@@ -123,11 +95,11 @@ public class InsertData {
 		System.out.println("insert thanh cong");
 	}
 
-	// lấy nội dung bảng log lên
+	// lấy ra danh sach cac file trong log co trang thai NR
 	public ArrayList<LogModel> getLog() {
 		ArrayList<LogModel> logs = new ArrayList<LogModel>();
 		connection = connectDataConfig.connectConfigDatabase();
-		String sql = "SELECT * FROM datawarehouse_configuration.log;";
+		String sql = "SELECT * FROM datawarehouse_configuration.log where load_staging_status='NR';";
 		try {
 			pre = connection.prepareStatement(sql);
 			result = pre.executeQuery();
@@ -146,35 +118,31 @@ public class InsertData {
 		return logs;
 	}
 
-	// lấy nội dung các text lấy được đem vào lưu trong database stagging và cập
-	// nhật log
+	// lấy nội dung các text lấy được đem vào lưu trong database stagging và cập nhật log
 	public void addText() {
 		// lay noi dung file text co trng thai satus bang NR dem vao insert vao staging
 		String sql = "insert into datawarehouse_staging.staging(text) value(?)";
-		// lay ra thong tin ten va dia chi file text co trang thai NR
-		String sql2 = "select * from datawarehouse_configuration.log where load_staging_status='NR';";
 		// cap nhat trang thai bang cach them vao 1 dong tuong tu voi trang thai bang ER
-		String sql3 = "update datawarehouse_configuration.log set load_staging_status =? where load_staging_status='NR';";
+		String sql3 = "update datawarehouse_configuration.log set load_staging_status =? where file_name = ?;";
 		connection = connectDataConfig.connectDataStaging();
 		connection2 = connectDataConfig.connectConfigDatabase();
 		try {
-
-			pre2 = connection2.prepareStatement(sql2);
-			result = pre2.executeQuery();
 			ArrayList<LogModel> log = getLog();
 			for (LogModel logModel : log) {
 				pre = connection.prepareStatement(sql);
 				String text = connectDataConfig.readFileFromFolder(logModel.getFileLocation());
 				String[] data = text.split("\n");
 				for (String d : data) {
-					if (!d.startsWith("STT") || !d.startsWith("")) {
+					if (!d.startsWith("STT") || !d.startsWith("")) { //loại bỏ header
 						pre.setString(1, d);
 						pre.executeUpdate();
 					}
+					pre3 = connection2.prepareStatement(sql3);
+					pre3.setString(1, "ER");
+					pre3.setString(2, logModel.getFileName());
+					pre3.executeUpdate();
 				}
-				pre3 = connection2.prepareStatement(sql3);
-				pre3.setString(1, "ER");
-				// pre3.executeUpdate();
+				
 				System.out.println("sucess");
 			}
 
@@ -278,10 +246,6 @@ public class InsertData {
 		//for (ControlModel controlModel : controls) {
 		//	System.out.println(controlModel.toString());
 		//}
-		ArrayList<ControlModel> controls = insert.getControlModel();
-		for (ControlModel controlModel : controls) {
-			System.out.println(controlModel.toString());
-		}
 		// ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
 		// : loadStaging) { System.out.println(st); }
 

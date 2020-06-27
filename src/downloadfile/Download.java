@@ -1,6 +1,9 @@
 package downloadfile;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import com.chilkatsoft.CkGlobal;
 import com.chilkatsoft.CkScp;
@@ -73,6 +76,29 @@ public class Download {
 		}
 		System.out.println("Insert "+count+" file to log");
 		System.out.println("Download File Success.");
+	}
+	//lay tu csdl len roi dowload
+	public void dowloadFile() {
+		String sql = "SELECT * FROM datawarehouse_configuration.db_dowloadfile_control";
+		try {
+			Connection connection = connectDataConfig.connectConfigDatabase();
+			PreparedStatement pre = connection.prepareStatement(sql);
+			ResultSet r = pre.executeQuery();
+			Account account = null;
+			FileProperties fileProperties = null;
+			while(r.next()) {
+				String userName = r.getString(2);
+				String password = r.getString(3);
+				String fileFormat = r.getString(4);
+				String remoteDir = r.getString(5);
+				String localDir = r.getString(6);
+				account = new Account(userName, password);
+				fileProperties = new FileProperties(fileFormat, remoteDir, localDir);
+			}
+			downloadFileFromNas(account, fileProperties);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	//phương thức này còn bị lỗi
 	public void insertLog(File file) {
