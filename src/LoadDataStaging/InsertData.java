@@ -281,6 +281,6 @@ public class InsertData {
 		// insert.insertToLog();
 		// insert.addText();
 		// insert.insertToDataWareHouse();
-		 insert.insertToDBControl();
+		// insert.insertToDBControl();
 	}
 }
