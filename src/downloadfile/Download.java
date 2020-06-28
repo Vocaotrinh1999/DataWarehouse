@@ -106,9 +106,7 @@ public class Download {
 	public void dowloadFile() {
 		String sql = "SELECT * FROM datawarehouse_configuration.db_dowloadfile_control";
 		try {
-			Connection connection = connectDataConfig.connectConfigDatabase();
-			PreparedStatement pre = connection.prepareStatement(sql);
-			ResultSet r = pre.executeQuery();
+			ResultSet r = connectDataConfig.selectDatabase(sql);
 			Account account = null;
 			FileProperties fileProperties = null;
 			while (r.next()) {
@@ -125,7 +123,7 @@ public class Download {
 			e.printStackTrace();
 		}
 	}
-
+//kiem tra trung du lieu khi ghi vao log
 	public boolean checkDuplicate(String fileNameNeedCheck) {
 		String sql = "SELECT * FROM datawarehouse_configuration.log;";
 		ArrayList<LogModel> listLog = new ArrayList<LogModel>();
