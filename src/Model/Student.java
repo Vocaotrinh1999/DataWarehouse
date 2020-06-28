@@ -7,7 +7,7 @@ public class Student {
 	private int mssv;
 	private String firstName;
 	private String lastName;
-	private Date dateOfBirth;
+	private String dateOfBirth;
 	private String classCode;
 	private String className;
 	private String phoneNumber;// truong hop so dien thoai có chua so 0
@@ -15,7 +15,7 @@ public class Student {
 	private String city;// ten dia chi sinh song
 	private String note;// ghi chu ve sinh vien
 
-	public Student(int mssv, String firstName, String lastName, Date dateOfBirth, String classCode, String className,
+	public Student(int mssv, String firstName, String lastName, String dateOfBirth, String classCode, String className,
 			String phoneNumber, String email, String city, String note) {
 		super();
 		this.mssv = mssv;
@@ -54,11 +54,11 @@ public class Student {
 		this.lastName = lastName;
 	}
 
-	public Date getDateOfBirth() {
+	public String getDateOfBirth() {
 		return dateOfBirth;
 	}
 
-	public void setDateOfBirth(Date dateOfBirth) {
+	public void setDateOfBirth(String dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
 	}
 
@@ -108,6 +108,12 @@ public class Student {
 
 	public void setNote(String note) {
 		this.note = note;
+	}
+
+	@Override
+	public String toString() {
+		return mssv + ", " + firstName + ", " + lastName + ", " + dateOfBirth + ", " + classCode + ", " + className
+				+ ", " + phoneNumber + ", " + email + ", " + city + ", " + note;
 	}
 
 }
