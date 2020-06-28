@@ -106,7 +106,7 @@ public class ConnectDataConfig {
 		stmt.close();
 	}
 
-	// chọn dữ liệu sql
+	// select tu csdl
 	public ResultSet selectDatabase(String sql) throws Exception {
 		Connection connect = connectConfigDatabase();
 		Statement stmt = connect.createStatement();
