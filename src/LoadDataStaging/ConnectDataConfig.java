@@ -106,6 +106,14 @@ public class ConnectDataConfig {
 		stmt.close();
 	}
 
+	// chọn dữ liệu sql
+	public ResultSet selectDatabase(String sql) throws Exception {
+		Connection connect = connectConfigDatabase();
+		Statement stmt = connect.createStatement();
+		ResultSet rs = stmt.executeQuery(sql);
+		return rs;
+	}
+
 	public static void main(String[] args) {
 		ConnectDataConfig connect = new ConnectDataConfig();
 		Connection c1 = connect.connectConfigDatabase();
