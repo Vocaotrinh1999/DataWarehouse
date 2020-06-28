@@ -7,5 +7,7 @@ public class testDownload {
 		FileProperties fileProperties = new FileProperties("sinhvien*.*", "/volume1/ECEP/song.nguyen/DW_2020/data",
 				"data");
 		download.downloadFileFromNas(account, fileProperties);
+		
+		//download.dowloadFile();
 	}
 }
