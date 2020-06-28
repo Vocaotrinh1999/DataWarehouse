@@ -17,6 +17,14 @@ public class LogModel {
 		this.loadStagingStatus = loadStagingStatus;
 		this.loadDataWarehouseStatus = loadDataWarehouseStatus;
 	}
+	public LogModel(String fileName, String fileLocation, String loadStagingStatus,
+			String loadDataWarehouseStatus) {
+		super();
+		this.fileName = fileName;
+		this.fileLocation = fileLocation;
+		this.loadStagingStatus = loadStagingStatus;
+		this.loadDataWarehouseStatus = loadDataWarehouseStatus;
+	}
 
 	public int getId() {
 		return id;
