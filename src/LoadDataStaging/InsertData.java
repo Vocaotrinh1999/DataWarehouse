@@ -94,6 +94,22 @@ public class InsertData {
 		}
 		System.out.println("insert thanh cong");
 	}
+	public String getTnsertControl(String insertName) {
+		String s = "";
+		connection = connectDataConfig.connectConfigDatabase();
+		String sql = "SELECT * FROM datawarehouse_configuration.db_insert_control where insert_name = ?";
+		try {
+			pre = connection.prepareStatement(sql);
+			pre.setString(1, insertName);
+			result = pre.executeQuery();
+			while(result.next()) {
+				s+= result.getString(3)+","+result.getString(4)+","+result.getString(5);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return s;
+	}
 
 	// lấy ra danh sach cac file trong log co trang thai NR
 	public ArrayList<LogModel> getLog() {
@@ -151,7 +167,6 @@ public class InsertData {
 			e.printStackTrace();
 		}
 	}
-
 	// xóa dữ liệu trùng trong data staging
 	// hai dong du lieu giong nhau chi giu lai 1 dong
 	public void deleteDuplicateInStaging() {
@@ -260,6 +275,7 @@ public class InsertData {
 		// insert.insertToDBControl();
 		// insert.insertToStudent();
 		// insert.insertToDBControl();
+		System.out.println(insert.getTnsertControl("insert_Transform"));
 
 	}
 }
