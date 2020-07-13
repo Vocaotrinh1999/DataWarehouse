@@ -68,6 +68,7 @@ public class InsertData {
 				textMail = "Thêm vào database control bị lỗi cần kiểm tra lại";
 				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "load vào db control bị lỗi cần kiểm tra lại", textMail);
 			}
+			connection.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -128,6 +129,7 @@ public class InsertData {
 				LogModel log = new LogModel(id, fileName, fileLocation, loadStagingStatus, loadDataWarehouseStatus);
 				logs.add(log);
 			}
+			connection.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -159,10 +161,9 @@ public class InsertData {
 					pre3.setString(2, logModel.getFileName());
 					pre3.executeUpdate();
 				}
-
 				System.out.println("sucess");
 			}
-
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -181,9 +182,10 @@ public class InsertData {
 			} else {
 				System.out.println("xoa dong trung bi loi hoac khong co dong nao trung can xem lai");
 			}
+			connection.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}	
 	}
 
 	// lấy nội dung các đoạn text đã lưu trong csdl để chuyển đổi thành object
@@ -197,9 +199,11 @@ public class InsertData {
 			while (result.next()) {
 				listST.add(result.getString(1));
 			}
+			connection.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		return listST;
 	}
 
@@ -251,6 +255,7 @@ public class InsertData {
 						+ " dòng";
 				sendMail.sendMail(emailSendTo, subject, textMail);
 			}
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
