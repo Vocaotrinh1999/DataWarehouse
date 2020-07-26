@@ -5,7 +5,11 @@ public class LopHoc {
 	private String maLH;
 	private int maMH;
 	private int namhoc;
-	
+
+	public LopHoc() {
+
+	}
+
 	public LopHoc(String maLH, int maMH, int namhoc) {
 		super();
 		this.maLH = maLH;
@@ -41,5 +45,5 @@ public class LopHoc {
 	public String toString() {
 		return "LopHoc [maLH=" + maLH + ", maMH=" + maMH + ", namhoc=" + namhoc + "]";
 	}
-	
+
 }

@@ -14,6 +14,10 @@ public class Subject {
 	private String khoaQly2014;
 	private String ghichu;
 
+	public Subject() {
+
+	}
+
 	public Subject(int stt, int msmh2013, String tenmh2013, int stc2013, String khoaQly2013, String khoaSuDung,
 			int msmh2014, String tenmh2014, int stc2014, String khoaQly2014, String ghichu) {
 		super();
@@ -72,6 +76,50 @@ public class Subject {
 
 	public String getGhichu() {
 		return ghichu;
+	}
+
+	public void setStt(int stt) {
+		this.stt = stt;
+	}
+
+	public void setMsmh2013(int msmh2013) {
+		this.msmh2013 = msmh2013;
+	}
+
+	public void setTenmh2013(String tenmh2013) {
+		this.tenmh2013 = tenmh2013;
+	}
+
+	public void setStc2013(int stc2013) {
+		this.stc2013 = stc2013;
+	}
+
+	public void setKhoaQly2013(String khoaQly2013) {
+		this.khoaQly2013 = khoaQly2013;
+	}
+
+	public void setKhoaSuDung(String khoaSuDung) {
+		this.khoaSuDung = khoaSuDung;
+	}
+
+	public void setMsmh2014(int msmh2014) {
+		this.msmh2014 = msmh2014;
+	}
+
+	public void setTenmh2014(String tenmh2014) {
+		this.tenmh2014 = tenmh2014;
+	}
+
+	public void setStc2014(int stc2014) {
+		this.stc2014 = stc2014;
+	}
+
+	public void setKhoaQly2014(String khoaQly2014) {
+		this.khoaQly2014 = khoaQly2014;
+	}
+
+	public void setGhichu(String ghichu) {
+		this.ghichu = ghichu;
 	}
 
 	@Override
