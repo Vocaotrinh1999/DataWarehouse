@@ -1,14 +1,32 @@
 package LoadDataStaging;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import GuiMail.SendMailTLS;
+import Model.DangKy;
 import Model.LogModel;
+import Model.LopHoc;
+import Model.Student;
+import Model.Subject;
 
 public class InsertData {
 	ConnectDataConfig connectDataConfig;
@@ -25,54 +43,6 @@ public class InsertData {
 		emailSendTo = "17130256@st.hcmuaf.edu.vn";
 		subject = "";
 		textMail = "";
-	}
-
-	public void insertToDBControl() {
-		connection = connectDataConfig.connectConfigDatabase();
-		String sql = "insert into datawarehouse_configuration.database_control(name,location,target_table,file_type,delimeter,import_dir,sucess_Dir,error_Dir)"
-				+ "values(?,?,?,?,?,?,?,?)";
-		String importDir = "..\\data";
-		String sucessDir = "F:\\anh\\datawarehouse\\sucess";
-		String errorDir = "F:\\anh\\datawarehouse\\error";
-		File file = new File(importDir);
-		File[] listFile = file.listFiles();
-		String textFileName = "";
-		int result = 0;
-		try {
-			for (File f : listFile) {
-				pre = connection.prepareStatement(sql);
-				String fileName = f.getName();
-				textFileName += fileName + "\n";
-				String fileLocation = f.getAbsolutePath();
-				String targetTable = fileName.split("_")[0];// cat theo _ ten file => sinhvien
-				String[] splitFileType = fileName.split("\\.");
-				String fileType = splitFileType[splitFileType.length - 1];
-				String delimeter = ",";// gia su dieu la file csv
-				pre.setString(1, fileName);
-				pre.setString(2, fileLocation);
-				pre.setString(3, targetTable);
-				pre.setString(4, fileType);
-				pre.setString(5, delimeter);
-				pre.setString(6, importDir);
-				pre.setString(7, sucessDir);
-				pre.setString(8, errorDir);
-				result = pre.executeUpdate();
-			}
-			if (result > 0) {
-				System.out.println("insert sucess");
-				textMail = "Đã thêm vào database control các file" + textFileName + "\n vào database control";
-				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "Các file đã insert thành công vào db control",
-						textMail);
-			} else {
-				System.out.println("insert fail");
-				textMail = "Thêm vào database control bị lỗi cần kiểm tra lại";
-				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "load vào db control bị lỗi cần kiểm tra lại", textMail);
-			}
-			connection.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	// lấy các file đã dowload trong thư mục data đã lưu trong db control đem ra
@@ -95,21 +65,15 @@ public class InsertData {
 		}
 		System.out.println("insert thanh cong");
 	}
-	public String getTnsertControl(String insertName) {
-		String s = "";
-		connection = connectDataConfig.connectConfigDatabase();
-		String sql = "SELECT * FROM datawarehouse_configuration.db_insert_control where insert_name = ?";
+
+	public void moveFile(String sourcePath, String destinationPath) {
 		try {
-			pre = connection.prepareStatement(sql);
-			pre.setString(1, insertName);
-			result = pre.executeQuery();
-			while(result.next()) {
-				s+= result.getString(3)+","+result.getString(4)+","+result.getString(5);
-			}
-		} catch (Exception e) {
+			File sourceFile = new File(sourcePath);
+			File destFile = new File(destinationPath);
+			Files.copy(sourceFile.toPath(), destFile.toPath());
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return s;
 	}
 
 	// lấy ra danh sach cac file trong log co trang thai NR
@@ -136,151 +100,488 @@ public class InsertData {
 		return logs;
 	}
 
-	// lấy nội dung các text lấy được đem vào lưu trong database stagging và cập
-	// nhật log
-	public void addText() {
-		// lay noi dung file text co trng thai satus bang NR dem vao insert vao staging
-		String sql = "insert into datawarehouse_staging.staging(text) value(?)";
-		// cap nhat trang thai bang cach them vao 1 dong tuong tu voi trang thai bang ER
-		String sql3 = "update datawarehouse_configuration.log set load_staging_status =? where file_name = ?;";
-		connection = connectDataConfig.connectDataStaging();
-		connection2 = connectDataConfig.connectConfigDatabase();
+	public List<Student> readStudent(String filePath) {
+		List<Student> students = new ArrayList<Student>();
 		try {
-			ArrayList<LogModel> log = getLog();
-			for (LogModel logModel : log) {
-				pre = connection.prepareStatement(sql);
-				String text = connectDataConfig.readFileFromFolder(logModel.getFileLocation());
-				String[] data = text.split("\n");
-				for (String d : data) {
-					if (!d.startsWith("STT") || !d.startsWith("")) { // loại bỏ header
-						pre.setString(1, d);
-						pre.executeUpdate();
+			FileInputStream inputStream = new FileInputStream(new File(filePath));
+			Workbook workbook = new XSSFWorkbook(inputStream);
+			Sheet sheet = workbook.getSheetAt(0);
+
+			Iterator iterator = sheet.iterator();
+			while (iterator.hasNext()) {
+				Row nextRow = (Row) iterator.next();
+				// Not creating student object for header
+				if (nextRow.getRowNum() == 0)
+					continue;
+
+				Student student = new Student();
+				Iterator cellIterator = nextRow.cellIterator();
+
+				while (cellIterator.hasNext()) {
+					Cell cell = (Cell) cellIterator.next();
+					int columnIndex = cell.getColumnIndex();
+					switch (columnIndex + 1) {
+					case 1:
+						break;
+					case 2:
+						if (cell.getCellType() == CellType.STRING) {
+							student.setMssv(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							student.setMssv((int) cell.getNumericCellValue());
+						}
+						break;
+					case 3:
+						if (cell.getCellType() == CellType.STRING) {
+							student.setFirstName(cell.getStringCellValue());
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							student.setFirstName(String.valueOf(cell.getNumericCellValue()));
+						}
+						break;
+					case 4:
+						student.setLastName(cell.getStringCellValue());
+						break;
+					case 5:
+						student.setDateOfBirth(cell.getStringCellValue());
+						break;
+					case 6:
+						student.setClassCode(cell.getStringCellValue());
+						break;
+					case 7:
+						student.setClassName(cell.getStringCellValue());
+						break;
+					case 8:
+						if (cell.getCellType() == CellType.STRING) {
+							student.setPhoneNumber(cell.getStringCellValue());
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							student.setPhoneNumber(String.valueOf(cell.getNumericCellValue()));
+						}
+						break;
+					case 9:
+						student.setEmail(cell.getStringCellValue());
+						break;
+					case 10:
+						student.setCity(cell.getStringCellValue());
+						break;
+					case 11:
+						student.setNote(cell.getStringCellValue());
+						break;
 					}
-					pre3 = connection2.prepareStatement(sql3);
-					pre3.setString(1, "ER");
-					pre3.setString(2, logModel.getFileName());
-					pre3.executeUpdate();
 				}
-				System.out.println("sucess");
+				if (student.getMssv() != 0) {
+					students.add(student);
+				}
 			}
-			connection.close();
-		} catch (SQLException e) {
+			workbook.close();
+			inputStream.close();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	// xóa dữ liệu trùng trong data staging
-	// hai dong du lieu giong nhau chi giu lai 1 dong
-	public void deleteDuplicateInStaging() {
-		connection = connectDataConfig.connectDataStaging();
-		String sql = "DELETE s1 FROM datawarehouse_staging.staging s1 " + "INNER JOIN datawarehouse_staging.staging s2 "
-				+ "WHERE s1.id < s2.id AND s1.text = s2.text;";
-		try {
-			pre = connection.prepareStatement(sql);
-			int soDongTrung = pre.executeUpdate();
-			if (soDongTrung > 0) {
-				System.out.println("so dong trung da xoa la : " + soDongTrung);
-			} else {
-				System.out.println("xoa dong trung bi loi hoac khong co dong nao trung can xem lai");
-			}
-			connection.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}	
+		return students;
+
 	}
 
-	// lấy nội dung các đoạn text đã lưu trong csdl để chuyển đổi thành object
-	public ArrayList<String> loadTextFromStaging() {
-		ArrayList<String> listST = new ArrayList<String>();
-		connection = connectDataConfig.connectDataStaging();
-		String sql = "SELECT text FROM datawarehouse_staging.staging";
+	public List<Subject> readSubject(String path) {
+		List<Subject> subjects = new ArrayList<Subject>();
 		try {
-			pre = connection.prepareStatement(sql);
-			result = pre.executeQuery();
-			while (result.next()) {
-				listST.add(result.getString(1));
+			FileInputStream inputStream = new FileInputStream(new File(path));
+			Workbook workbook = new XSSFWorkbook(inputStream);
+			Sheet sheet = workbook.getSheetAt(0);
+
+			Iterator iterator = sheet.iterator();
+			while (iterator.hasNext()) {
+				Row nextRow = (Row) iterator.next();
+				// Not creating student object for header
+				if (nextRow.getRowNum() == 0)
+					continue;
+
+				Subject subject = new Subject();
+				Iterator cellIterator = nextRow.cellIterator();
+
+				while (cellIterator.hasNext()) {
+					Cell cell = (Cell) cellIterator.next();
+					int columnIndex = cell.getColumnIndex();
+					switch (columnIndex + 1) {
+					case 1:
+						if (cell.getCellType() == CellType.STRING) {
+							subject.setStt(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							subject.setStt((int) cell.getNumericCellValue());
+						}
+						break;
+					case 2:
+						if (cell.getCellType() == CellType.STRING) {
+							subject.setMsmh2013(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							subject.setMsmh2013((int) cell.getNumericCellValue());
+						}
+						break;
+					case 3:
+						if (cell.getCellType() == CellType.STRING) {
+							subject.setTenmh2013(cell.getStringCellValue());
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							subject.setTenmh2013(String.valueOf(cell.getNumericCellValue()));
+						}
+						break;
+					case 4:
+						if (cell.getCellType() == CellType.STRING) {
+							subject.setStc2013(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							subject.setStc2013((int) cell.getNumericCellValue());
+						}
+						break;
+					case 5:
+						subject.setKhoaQly2013(cell.getStringCellValue());
+						break;
+					case 6:
+						subject.setKhoaSuDung(cell.getStringCellValue());
+						break;
+					case 7:
+						if (cell.getCellType() == CellType.STRING) {
+							subject.setMsmh2014(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							subject.setMsmh2014((int) cell.getNumericCellValue());
+						}
+					case 8:
+						if (cell.getCellType() == CellType.STRING) {
+							subject.setTenmh2014(cell.getStringCellValue());
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							subject.setTenmh2014(String.valueOf(cell.getNumericCellValue()));
+						}
+						break;
+					case 9:
+						if (cell.getCellType() == CellType.STRING) {
+							subject.setStc2014(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							subject.setStc2014((int) cell.getNumericCellValue());
+						}
+						break;
+					case 10:
+						subject.setKhoaQly2014(cell.getStringCellValue());
+						break;
+					case 11:
+						subject.setGhichu(cell.getStringCellValue());
+						break;
+					}
+				}
+				if (subject.getStt() != 0) {
+					subjects.add(subject);
+				}
 			}
-			connection.close();
-		} catch (Exception e) {
+			workbook.close();
+			inputStream.close();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		return listST;
+		return subjects;
 	}
 
-	// lưu các đối tượng lấy từ staging đem transform rồi lưu vào data student trước
-	// khi qua bước data warehouse
-	public void insertToStudent() {
-		ArrayList<String> listEmp = loadTextFromStaging();
-		connection = connectDataConfig.connectConfigDatabase();
+	public List<LopHoc> readClass(String path) {
+		List<LopHoc> listClass = new ArrayList<LopHoc>();
+		try {
+			FileInputStream inputStream = new FileInputStream(new File(path));
+			Workbook workbook = new XSSFWorkbook(inputStream);
+			Sheet sheet = workbook.getSheetAt(0);
+
+			Iterator iterator = sheet.iterator();
+			while (iterator.hasNext()) {
+				Row nextRow = (Row) iterator.next();
+				// Not creating student object for header
+				if (nextRow.getRowNum() == 0)
+					continue;
+
+				LopHoc lophoc = new LopHoc();
+				Iterator cellIterator = nextRow.cellIterator();
+
+				while (cellIterator.hasNext()) {
+					Cell cell = (Cell) cellIterator.next();
+					int columnIndex = cell.getColumnIndex();
+					switch (columnIndex + 1) {
+					case 1:
+						if (cell.getCellType() == CellType.STRING) {
+							lophoc.setMaLH(cell.getStringCellValue());
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							lophoc.setMaLH(String.valueOf(cell.getNumericCellValue()));
+						}
+						break;
+					case 2:
+						if (cell.getCellType() == CellType.STRING) {
+							lophoc.setMaMH(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							lophoc.setMaMH((int) cell.getNumericCellValue());
+						}
+						break;
+					case 3:
+						if (cell.getCellType() == CellType.STRING) {
+							lophoc.setNamhoc(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							lophoc.setNamhoc((int) (cell.getNumericCellValue()));
+						}
+						break;
+
+					}
+				}
+				if (lophoc.getMaMH() != 0) {
+					listClass.add(lophoc);
+				}
+			}
+			workbook.close();
+			inputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return listClass;
+	}
+
+	public List<DangKy> readRegister(String path) {
+		List<DangKy> registers = new ArrayList<DangKy>();
+		try {
+			FileInputStream inputStream = new FileInputStream(new File(path));
+			Workbook workbook = new XSSFWorkbook(inputStream);
+			Sheet sheet = workbook.getSheetAt(0);
+
+			Iterator iterator = sheet.iterator();
+			while (iterator.hasNext()) {
+				Row nextRow = (Row) iterator.next();
+				// Not creating student object for header
+				if (nextRow.getRowNum() == 0)
+					continue;
+
+				DangKy dk = new DangKy();
+				Iterator cellIterator = nextRow.cellIterator();
+
+				while (cellIterator.hasNext()) {
+					Cell cell = (Cell) cellIterator.next();
+					int columnIndex = cell.getColumnIndex();
+					switch (columnIndex + 1) {
+					case 1:
+						if (cell.getCellType() == CellType.STRING) {
+							dk.setMaDK(cell.getStringCellValue());
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							dk.setMaDK(String.valueOf(cell.getNumericCellValue()));
+						}
+						break;
+					case 2:
+						if (cell.getCellType() == CellType.STRING) {
+							dk.setMssv(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							dk.setMssv((int) cell.getNumericCellValue());
+						}
+						break;
+					case 3:
+						if (cell.getCellType() == CellType.STRING) {
+							dk.setMssv(Integer.parseInt(cell.getStringCellValue()));
+						} else if (cell.getCellType() == CellType.NUMERIC) {
+							dk.setMssv((int) cell.getNumericCellValue());
+						}
+						break;
+
+					}
+				}
+				if (dk.getMssv() != 0) {
+					registers.add(dk);
+				}
+			}
+			workbook.close();
+			inputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return registers;
+	}
+
+	public boolean insertToStudent(String filePath) {
+		List<Student> listST = readStudent(filePath);
+		connection2 = connectDataConfig.connectDataStaging();
 		String sql1 = "insert into datawarehouse_staging.data_student(mssv,firstName,lastName,dateOfBirth,classCode,className,phoneNumber,email,city,note) "
 				+ "value(?,?,?,?,?,?,?,?,?,?)";
 		int rowInsert = 0;
-		String textMail = "";
 		try {
-			for (String line : listEmp) {
-				pre = connection.prepareStatement(sql1);
-				String[] arr = line.split(",");
-				int mssv = Integer.parseInt(arr[1]);
-				String firstName = arr[2];
-				String lastName = arr[3];
-				String date = arr[4];
-				String classCode = arr[5];
-				String className = arr[6];
-				String phoneNumber = arr[7];
-				String email = arr[8];
-				String city = arr[9];
-				String note = arr[10];
-
-				pre.setInt(1, mssv);
-				pre.setString(2, firstName);
-				pre.setString(3, lastName);
-				pre.setString(4, date);
-				pre.setString(5, classCode);
-				pre.setString(6, className);
-				pre.setString(7, phoneNumber);
-				pre.setString(8, email);
-				pre.setString(9, city);
-				pre.setString(10, note);
+			connection2.setAutoCommit(false);
+			pre = connection2.prepareStatement(sql1);
+			for (Student st : listST) {
+				pre.setInt(1, st.getMssv());
+				pre.setString(2, st.getFirstName());
+				pre.setString(3, st.getLastName());
+				String date = st.getDateOfBirth();
+				String[] date2 = date.split("/");
+				LocalDate date3 = LocalDate.of(Integer.parseInt(date2[2]), Integer.parseInt(date2[1]),
+						Integer.parseInt(date2[0]));
+				pre.setDate(4, Date.valueOf(date3));
+				pre.setString(5, st.getClassCode());
+				pre.setString(6, st.getClassName());
+				pre.setString(7, st.getPhoneNumber());
+				pre.setString(8, st.getEmail());
+				pre.setString(9, st.getCity());
+				pre.setString(10, st.getNote());
 				rowInsert += pre.executeUpdate();
+				connection2.commit();
 			}
-			if (rowInsert == listEmp.size()) {
-				System.out.println("so dong insert vao la " + rowInsert);// thanh cong
-				subject = "Insert to db student thành công";
-				textMail = "Đã insert thành công : " + rowInsert + " vào db student";
-				sendMail.sendMail(emailSendTo, subject, textMail);
-			} else if (rowInsert < listEmp.size()) {
-				subject = "Insert to db có thể thiếu số dòng so vs staging cần kiểm tra";
-				int conLai = listEmp.size() - rowInsert;
-				textMail = "Đã insert thành công : " + rowInsert + " dòng vào db student và còn thiếu : " + conLai
-						+ " dòng";
-				sendMail.sendMail(emailSendTo, subject, textMail);
+			if (rowInsert != listST.size()) {
+				connection2.rollback();
+				return false;
+			}
+			connection2.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	public boolean insertSubject(String path) {
+		List<Subject> listSubject = readSubject(path);
+		connection = connectDataConfig.connectDataWarehouse();
+		String sql = "insert into datawarehouse.data_subject(stt,msmh,tenmh,stc,khoaqly,khoasudung,ghichu,version,expriteDate)"
+				+ " values (?,?,?,?,?,?,?,?,?)";
+		String sql2 = "update datawarehouse.data_subject set expriteDate = ? where version = 1";
+		try {
+			pre = connection.prepareStatement(sql);
+			pre2 = connection.prepareStatement(sql2);
+			for (Subject s : listSubject) {
+				pre.setInt(1, s.getStt());
+				pre.setInt(2, s.getMsmh2013());
+				pre.setString(3, s.getTenmh2013());
+				pre.setInt(4, s.getStc2013());
+				pre.setString(5, s.getKhoaQly2013());
+				pre.setString(6, s.getKhoaSuDung());
+				pre.setString(7, s.getGhichu());
+				pre.setInt(8, 1);
+				LocalDate l = LocalDate.of(9999, 12, 31);
+				pre.setDate(9, Date.valueOf(l));
+				pre.executeUpdate();
+			}
+			for (Subject s : listSubject) {
+				if (s.getMsmh2013() != s.getMsmh2014() || s.getTenmh2013() != s.getTenmh2014()
+						|| s.getStc2013() != s.getStc2014() || s.getKhoaQly2013() != s.getKhoaQly2014()) {
+					pre.setInt(1, s.getStt());
+					pre.setInt(2, s.getMsmh2014());
+					pre.setString(3, s.getTenmh2014());
+					pre.setInt(4, s.getStc2014());
+					pre.setString(5, s.getKhoaQly2014());
+					pre.setString(6, s.getKhoaSuDung());
+					pre.setString(7, s.getGhichu());
+					pre.setInt(8, 2);
+					LocalDate l = LocalDate.of(9999, 12, 31);
+					pre.setDate(9, Date.valueOf(l));
+
+					LocalDate l1 = LocalDate.of(2013, 6, 1);
+					pre2.setDate(1, Date.valueOf(l1));
+
+					pre.executeUpdate();
+					pre2.executeUpdate();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return true;
+	}
+
+	public boolean insertClass(String path) {
+		List<LopHoc> listLH = new ArrayList<LopHoc>();
+		connection = connectDataConfig.connectDataWarehouse();
+		String sql = "insert into datawarehouse.lophoc(maLH,maMH,namhoc) values(?,?,?)";
+		int rowInserted = 0;
+		try {
+			connection.setAutoCommit(false);
+			pre = connection.prepareStatement(sql);
+			for (LopHoc l : listLH) {
+				pre.setString(1, l.getMaLH());
+				pre.setInt(2, l.getMaMH());
+				pre.setInt(3, l.getNamhoc());
+				rowInserted += pre.executeUpdate();
+				connection.commit();
+			}
+			if (rowInserted != listLH.size()) {
+				connection.rollback();
+				return false;
+			}
+			connection.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	public boolean insertRegister(String path) {
+		List<DangKy> listDK = readRegister(path);
+		connection = connectDataConfig.connectDataWarehouse();
+		String sql = "insert into datawarehouse.dangky(madk,mssv,maLH,ngayDK) values(?,?,?,?)";
+		int rowInserted = 0;
+		try {
+			connection.setAutoCommit(false);
+			pre = connection.prepareStatement(sql);
+			for (DangKy d : listDK) {
+				pre.setString(1, d.getMaDK());
+				pre.setInt(2, d.getMssv());
+				pre.setString(3, d.getMaLH());
+				String[] date = d.getNgayDK().split("/");
+				LocalDate ngayDK = LocalDate.of(Integer.parseInt(date[2]), Integer.parseInt(date[1]),
+						Integer.parseInt(date[0]));
+				pre.setDate(4, Date.valueOf(ngayDK));
+				rowInserted += pre.executeUpdate();
+				connection.rollback();
+
+			}
+			if (rowInserted != listDK.size()) {
+				connection.rollback();
+				return false;
 			}
 			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		System.out.println("insert to data warehouse sucess");
+		return true;
+	}
+
+	public void run(int id) {
+		connection = connectDataConfig.connectConfigDatabase();
+		String sql1 = "select * from datawarehouse_configuration.database_control where id = " + id;
+		try {
+			pre = connection.prepareStatement(sql1);
+			result = pre.executeQuery();
+			String location = "";
+			String fileName = "";
+			String targetTable = "";
+			String sucessDir = "";
+			String errorDir = "";
+			while (result.next()) {
+				location += result.getString(3);
+				fileName += result.getString(2);
+				targetTable += result.getString(4);
+				sucessDir += result.getString(8) + "\\" + fileName;
+				errorDir += result.getString(9) + "\\" + fileName;
+			}
+			System.out.println("Location : " + location);
+			if (targetTable.equals("sinhvien")) {
+				if (insertToStudent(location)) {
+					moveFile(location, sucessDir);
+				} else {
+					moveFile(location, errorDir);
+				}
+			} else if (targetTable.equals("monhoc")) {
+				if (insertSubject(location)) {
+					moveFile(location, sucessDir);
+				} else {
+					moveFile(location, errorDir);
+				}
+			} else if (targetTable.equals("lophoc")) {
+				if (insertClass(location)) {
+					moveFile(location, sucessDir);
+				} else {
+					moveFile(location, errorDir);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) {
 		InsertData insert = new InsertData();
-		// ArrayList<ControlModel> controls = insert.getControlModel();
-		// for (ControlModel controlModel : controls) {
-		// System.out.println(controlModel.toString());
-		// }
-		// ArrayList<String> loadStaging = insert.loadTextFromStaging(); for (String st
-		// : loadStaging) { System.out.println(st); }
-
-		// insert.insertToLog();
-		// insert.addText();
-		// insert.insertToDataWareHouse();
-		// insert.insertToDBControl();
-
-		// insert.insertToDataWareHouse();
-		// insert.insertToDBControl();
-		// insert.insertToStudent();
-		// insert.insertToDBControl();
-		System.out.println(insert.getTnsertControl("insert_Transform"));
-
+		String path = "F:\\anh\\datawarehouse\\data\\monhocnhap.xlsx";
+		// System.out.println(insert.insertToStudent(path));
+		// System.out.println(insert.insertSubject(path));
+		insert.run(11);
 	}
 }

@@ -1,7 +1,5 @@
 package Model;
 
-import java.util.Date;
-
 public class Student {
 
 	private int mssv;
@@ -14,6 +12,10 @@ public class Student {
 	private String email;
 	private String city;// ten dia chi sinh song
 	private String note;// ghi chu ve sinh vien
+
+	public Student() {
+
+	}
 
 	public Student(int mssv, String firstName, String lastName, String dateOfBirth, String classCode, String className,
 			String phoneNumber, String email, String city, String note) {
