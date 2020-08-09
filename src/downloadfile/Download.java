@@ -12,6 +12,7 @@ import com.chilkatsoft.CkSsh;
 
 import GuiMail.SendMailTLS;
 import LoadDataStaging.ConnectDataConfig;
+<<<<<<< HEAD
 import LoadDataStaging.InsertData2;
 import Model.LogModel;
 
@@ -23,6 +24,19 @@ public class Download {
 	public Download() {
 		connectDataConfig = new ConnectDataConfig();
 		insert = new InsertData2();
+=======
+import LoadDataStaging.InsertData;
+import Model.LogModel;
+
+public class Download {
+	private ConnectDataConfig connectDataConfig;
+	private SendMailTLS sendMail;
+	private InsertData insert;
+
+	public Download() {
+		connectDataConfig = new ConnectDataConfig();
+		insert = new InsertData();
+>>>>>>> branch 'master' of https://github.com/Vocaotrinh1999/DataWarehouse
 	}
 
 	static {
