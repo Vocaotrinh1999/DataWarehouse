@@ -1,9 +1,8 @@
 package downloadfile;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import com.chilkatsoft.CkGlobal;
@@ -13,7 +12,6 @@ import com.chilkatsoft.CkSsh;
 import GuiMail.SendMailTLS;
 import LoadDataStaging.ConnectDataConfig;
 import LoadDataStaging.InsertData2;
-import Model.LogModel;
 
 public class Download {
 	private ConnectDataConfig connectDataConfig;
@@ -34,20 +32,53 @@ public class Download {
 		}
 	}
 
-	public void downloadFileFromNas(Account account, FileProperties fileProperties) {
+	// lay tu csdl len roi dowload
+	public void dowloadFile(int id) {
+		String fileName = "";
+		String typeFile = "";
+		String remoteDir = "";
+		String localDir = "";
+		String host = "";
+		Integer port = null;
+		String userName = "";
+		String password = "";
+		String sql = "SELECT * FROM datawarehouse_configuration.`control.data_file_configuration` where data_file_config_id ="
+				+ id;
+		try {
+			ResultSet r = connectDataConfig.selectDatabase(sql);
+			while (r.next()) {
+				fileName = r.getString("data_file_config_name");
+				typeFile = r.getString("data_file_type");
+				remoteDir = r.getString("remote_Dir");
+				localDir = r.getString("import_dir");
+				host = r.getString("hostname");
+				port = r.getInt("port");
+				userName = r.getString("username");
+				password = r.getString("password");
+			}
+			downloadFileFromNas(id, fileName + "." + typeFile, host, port, userName, password, remoteDir, localDir);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void downloadFileFromNas(int id, String fileFomatDownload, String host, Integer portName, String userName,
+			String password, String remoteDirName, String localDirName) {
+
 		String textSendMail = " ";
 		CkGlobal glob = new CkGlobal();
 		glob.UnlockBundle("Waiting . . .");
 		CkSsh ssh = new CkSsh();
-		String hostname = "drive.ecepvn.org";
-		int port = 2227;
+
+		String hostname = host;
+		int port = portName;
 		boolean success = ssh.Connect(hostname, port);
 		if (success != true) {
 			System.out.println(ssh.lastErrorText());
 			return;
 		}
 		ssh.put_IdleTimeoutMs(5000);
-		success = ssh.AuthenticatePw(account.getUserName(), account.getPassword());
+		success = ssh.AuthenticatePw(userName, password);
 		if (success != true) {
 			System.out.println(ssh.lastErrorText());
 			return;
@@ -58,18 +89,18 @@ public class Download {
 			System.out.println(scp.lastErrorText());
 			return;
 		}
-		scp.put_SyncMustMatch(fileProperties.getFileFormat());
-		String remoteDir = fileProperties.getRemoteDir();
-		String localDir = fileProperties.getLocalDir();
-		int mode = 2;
+		scp.put_SyncMustMatch(fileFomatDownload);
+		int mode = 3;
 		boolean bRecurse = false;
-		success = scp.SyncTreeDownload(remoteDir, localDir, mode, bRecurse);
+		success = scp.SyncTreeDownload(remoteDirName, localDirName, mode, bRecurse);
 		if (success != true) {
 			System.out.println(scp.lastErrorText());
 			return;
 		}
+
 		ssh.Disconnect();
-		File file = new File(fileProperties.getLocalDir());
+		// check trùng file và insert log
+		File file = new File(localDirName);
 		File[] listFile = file.listFiles();
 		int count = 0;
 		for (File file2 : listFile) {
@@ -78,10 +109,8 @@ public class Download {
 				textSendMail = "File " + file2.getName() + " error";
 				sendMail.sendMail("17130256@st.hcmuaf.edu.vn", "File Error", textSendMail);
 			} else {
-				LogModel logModel = new LogModel(file2.getName(), file2.getAbsolutePath(), "NR", "NR");
-				if (checkDuplicate(file2.getName()) == false) {
-					insertLog(logModel);
-					count++;
+				if (checkDuplicate(file2.getName(), id) == false) {
+					insertLog(file2.getName(), id, "DL");
 				}
 			}
 		}
@@ -91,10 +120,9 @@ public class Download {
 		sendMail.sendMail("17130024@st.hcmuaf.edu.vn", "File Error", textSendMail);
 	}
 
-	public void insertLog(LogModel logModel) {
-		String sql = "insert into datawarehouse_configuration.log(file_name,file_location,load_staging_status,load_datawarehouse_status) values('"
-				+ logModel.getFileName() + "','" + logModel.getFileLocation() + "','" + logModel.getLoadStagingStatus()
-				+ "','" + logModel.getLoadDataWarehouseStatus() + "');";
+	public void insertLog(String fileName, int id, String status) {
+		String sql = "insert into datawarehouse_configuration.`control.data_file`(file_name,data_config_id,file_status,dt_file_queued) value('"
+				+ fileName + "'," + id + ",'" + status + "','" + String.valueOf(LocalDateTime.now()) + "')";
 		try {
 			connectDataConfig.perform(sql);
 		} catch (Exception e) {
@@ -102,43 +130,18 @@ public class Download {
 		}
 	}
 
-	// lay tu csdl len roi dowload
-	public void dowloadFile() {
-		String sql = "SELECT * FROM datawarehouse_configuration.db_dowloadfile_control";
-		try {
-			ResultSet r = connectDataConfig.selectDatabase(sql);
-			Account account = null;
-			FileProperties fileProperties = null;
-			while (r.next()) {
-				String userName = r.getString(2);
-				String password = r.getString(3);
-				String fileFormat = r.getString(4);
-				String remoteDir = r.getString(5);
-				String localDir = r.getString(6);
-				account = new Account(userName, password);
-				fileProperties = new FileProperties(fileFormat, remoteDir, localDir);
-			}
-			downloadFileFromNas(account, fileProperties);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-//kiem tra trung du lieu khi ghi vao log
-	public boolean checkDuplicate(String fileNameNeedCheck) {
-		String sql = "SELECT * FROM datawarehouse_configuration.log;";
-		ArrayList<LogModel> listLog = new ArrayList<LogModel>();
+	// kiem tra trung du lieu khi ghi vao log
+	public boolean checkDuplicate(String fileNameNeedCheck, int id) {
+		String sql = "SELECT * FROM datawarehouse_configuration.`control.data_file` where data_config_id =" + id;
+		ArrayList<String> listFileName = new ArrayList<String>();
 		try {
 			ResultSet rs = connectDataConfig.selectDatabase(sql);
 			while (rs.next()) {
-				String fileName = rs.getString(2);
-				String fileLocation = rs.getString(3);
-				String loadStagingStatus = rs.getString(4);
-				String loadDataWarehouseStatus = rs.getString(5);
-				LogModel logModel = new LogModel(fileName, fileLocation, loadStagingStatus, loadDataWarehouseStatus);
-				listLog.add(logModel);
+				String fileName = rs.getString("file_name");
+				listFileName.add(fileName);
 			}
-			for (LogModel logModel : listLog) {
-				if (fileNameNeedCheck.equalsIgnoreCase(logModel.getFileName()))
+			for (String fileName : listFileName) {
+				if (fileNameNeedCheck.equalsIgnoreCase(fileName))
 					return true;
 			}
 		} catch (Exception e) {
@@ -146,5 +149,4 @@ public class Download {
 		}
 		return false;
 	}
-
 }
