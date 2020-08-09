@@ -1,0 +1,10 @@
+<<<<<<< HEAD
+com.mysql.cj.jdbc.Driver
+jdbc:mysql://localhost:3306/datawarehouse_configuration
+root
+=======
+com.mysql.cj.jdbc.Driver
+jdbc:mysql://localhost:3306/datawarehouse_configuration
+root
+>>>>>>> branch 'master' of https://github.com/Vocaotrinh1999/DataWarehouse
+1234

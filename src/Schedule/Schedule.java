@@ -26,6 +26,7 @@ public class Schedule {
 		connectDataConfig = new ConnectDataConfig();
 	}
 
+<<<<<<< HEAD
 	public Trigger getTrigger() {
 		Trigger trigger = null;
 		try {
@@ -90,6 +91,58 @@ public class Schedule {
 		int id = Integer.parseInt(args[0]);
 		Schedule s = new Schedule();
 		s.runProcessWithSchedule(id);
+=======
+	public void runProcessWithSchedule(int id) {// truyen vao id cua process
+		int count = 4;
+		String sql = "select count(*) from datawarehouse_configuration.`control.data_file` as c where file_status = 'DL'"
+				+ " and c.data_config_id = " + id;
+		try {
+			// 50s chay 1 lan
+			Trigger trigger = TriggerBuilder.newTrigger().withIdentity("triggerName", "group05")
+					.withSchedule(CronScheduleBuilder.cronSchedule("0/55 1-55 * * * ?")).build();
+			JobDetail job = null;
+			if (id == 1) {
+				job = JobBuilder.newJob(StudentJob.class).withIdentity("jobName", "group05").build();
+			} else if (id == 2) {
+				job = JobBuilder.newJob(JobClass.class).withIdentity("jobName", "group05").build();
+			} else if (id == 3) {
+				job = JobBuilder.newJob(JobSubject.class).withIdentity("jobName", "group05").build();
+			} else if (id == 4) {
+				job = JobBuilder.newJob(JobRegister.class).withIdentity("jobName", "group05").build();
+			}
+			Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+			connection = connectDataConfig.connectConfigDatabase();
+			stm = connection.createStatement();
+			result = stm.executeQuery(sql);
+			while (result.next()) {
+				count = result.getInt(1);
+			}
+			System.out.println("Count invalid status file : " + count);
+
+			if (count > 0) {
+				System.out.println("count " + count);
+				scheduler.start();
+				scheduler.scheduleJob(job, trigger);
+			} else if (count == 0) {
+				System.out.println("count " + count);
+				System.out.println("End --------------- process");
+				TriggerKey triggerKey = trigger.getKey();
+				scheduler.pauseTrigger(triggerKey);
+				scheduler.unscheduleJob(triggerKey);
+				scheduler.deleteJob(job.getKey());
+				scheduler.shutdown();
+				System.out.println("Shut dow : " + scheduler.isShutdown());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void main(String[] args) throws SchedulerException {
+
+		Schedule s = new Schedule();
+		s.runProcessWithSchedule(1);
+>>>>>>> branch 'master' of https://github.com/Vocaotrinh1999/DataWarehouse
 
 	}
 }
