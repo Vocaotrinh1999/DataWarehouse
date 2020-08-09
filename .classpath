@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="F:/ALibrary/c3p0-0.9.5.2.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/commons-codec-1.13.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/commons-collections4-4.4.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/commons-compress-1.18.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/log4j-core-2.13.2.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/org.apache.log4j-1.2.13.v200706111418.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/poi-4.1.2.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/poi-ooxml-4.1.2.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/poi-ooxml-schemas-4.1.2.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/quartz-2.3.2.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/quartz-jobs-2.3.2.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/slf4j-api-2.0.0-alpha1.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/slf4j-log4j12-2.0.0-alpha1.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/stax-api-1.0-2.jar"/>
+	<classpathentry kind="lib" path="F:/ALibrary/xmlbeans-3.1.0.jar"/>
+	<classpathentry kind="lib" path="F:/anh/datawarehouse/project/DataWarehouseProject/chilkat.jar"/>
+	<classpathentry kind="lib" path="F:/anh/datawarehouse/project/DataWarehouseProject/javax.mail.jar"/>
+	<classpathentry kind="lib" path="F:/anh/datawarehouse/project/DataWarehouseProject/mysql-connector-java-8.0.19.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
