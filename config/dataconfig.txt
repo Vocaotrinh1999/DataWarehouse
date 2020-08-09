@@ -1,0 +1,4 @@
+com.mysql.cj.jdbc.Driver
+jdbc:mysql://localhost:3306/datawarehouse_configuration
+root
+1234
